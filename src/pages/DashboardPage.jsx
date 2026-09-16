@@ -25,23 +25,26 @@ export default function DashboardPage() {
   useEffect(() => {
     const now = new Date();
     const load = async () => {
-      const [recentRes, categoriesRes, accountsRes, monthRes, allRes] =
-        await Promise.all([
-          expenseApi.recent(),
-          categoryApi.list(),
-          paymentApi.listAccounts(),
-          expenseApi.list({ month: now.getMonth() + 1, year: now.getFullYear(), size: 100 }),
-          expenseApi.list({ size: 1000 }),
-        ]);
+      try {
+        const [recentRes, categoriesRes, accountsRes, monthRes, allRes] =
+          await Promise.all([
+            expenseApi.recent(),
+            categoryApi.list(),
+            paymentApi.listAccounts(),
+            expenseApi.list({ month: now.getMonth() + 1, year: now.getFullYear(), size: 100 }),
+            expenseApi.list({ size: 1000 }),
+          ]);
 
-      const totalThisMonth = monthRes?.content?.reduce((sum, e) => sum + e.amount, 0);
-      const allTime = allRes?.content?.reduce((sum, e) => sum + e.amount, 0);
+        const totalThisMonth = monthRes?.content?.reduce((sum, e) => sum + e.amount, 0);
+        const allTime = allRes?.content?.reduce((sum, e) => sum + e.amount, 0);
 
-      setStats({ totalThisMonth, allTime });
-      setRecent(recentRes || []);
-      setCategories(categoriesRes || []);
-      setAccounts(accountsRes || []);
-      setLoading(false);
+        setStats({ totalThisMonth, allTime });
+        setRecent(recentRes || []);
+        setCategories(categoriesRes || []);
+        setAccounts(accountsRes || []);
+      } finally {
+        setLoading(false);
+      }
     };
     load();
   }, []);

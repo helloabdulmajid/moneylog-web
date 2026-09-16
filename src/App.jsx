@@ -6,6 +6,7 @@ import LandingPage from "./pages/LandingPage.jsx";
 import LoginPage from "./pages/LoginPage.jsx";
 import RegisterPage from "./pages/RegisterPage.jsx";
 import DashboardPage from "./pages/DashboardPage.jsx";
+import HomePage from "./pages/HomePage.jsx";
 import ExpensesPage from "./pages/ExpensesPage.jsx";
 import CategoriesPage from "./pages/CategoriesPage.jsx";
 import PaymentPage from "./pages/PaymentPage.jsx";
@@ -15,15 +16,18 @@ export default function App() {
 
   return (
     <Routes>
-      <Route path="/" element={<LandingPage />} />
+      <Route
+        path="/"
+        element={user ? <Navigate to="/app" replace /> : <LandingPage />}
+      />
 
       <Route
         path="/login"
-        element={user ? <Navigate to="/dashboard" replace /> : <LoginPage />}
+        element={user ? <Navigate to="/app" replace /> : <LoginPage />}
       />
       <Route
         path="/register"
-        element={user ? <Navigate to="/dashboard" replace /> : <RegisterPage />}
+        element={user ? <Navigate to="/app" replace /> : <RegisterPage />}
       />
 
       <Route
@@ -33,13 +37,14 @@ export default function App() {
           </ProtectedRoute>
         }
       >
+        <Route path="/app" element={<HomePage />} />
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/expenses" element={<ExpensesPage />} />
         <Route path="/categories" element={<CategoriesPage />} />
         <Route path="/payments" element={<PaymentPage />} />
       </Route>
 
-      <Route path="*" element={<Navigate to={user ? "/dashboard" : "/"} replace />} />
+      <Route path="*" element={<Navigate to={user ? "/app" : "/"} replace />} />
     </Routes>
   );
 }
