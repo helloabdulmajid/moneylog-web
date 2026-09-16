@@ -1,46 +1,45 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import useAuthStore from './store/authStore';
-import Layout from './components/layout/Layout';
-import LoginPage from './pages/LoginPage';
-import RegisterPage from './pages/RegisterPage';
-import HomePage from './pages/HomePage';
-import AddExpensePage from './pages/AddExpensePage';
-import InsightsPage from './pages/InsightsPage';
-import SettingsPage from './pages/SettingsPage';
+import { Navigate, Route, Routes } from "react-router-dom";
+import { useAuth } from "./context/AuthContext.jsx";
+import ProtectedRoute from "./components/ProtectedRoute.jsx";
+import Layout from "./components/Layout.jsx";
+import LandingPage from "./pages/LandingPage.jsx";
+import LoginPage from "./pages/LoginPage.jsx";
+import RegisterPage from "./pages/RegisterPage.jsx";
+import DashboardPage from "./pages/DashboardPage.jsx";
+import ExpensesPage from "./pages/ExpensesPage.jsx";
+import CategoriesPage from "./pages/CategoriesPage.jsx";
+import PaymentPage from "./pages/PaymentPage.jsx";
 
-const queryClient = new QueryClient();
+export default function App() {
+  const { user } = useAuth();
 
-const ProtectedRoute = ({ children }) => {
-  const { isAuthenticated } = useAuthStore();
-  return isAuthenticated ? children : <Navigate to="/login" />;
-};
-
-const PublicRoute = ({ children }) => {
-  const { isAuthenticated } = useAuthStore();
-  return isAuthenticated ? <Navigate to="/" /> : children;
-};
-
-function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
-        <Routes>
-          {/* Public Routes */}
-          <Route path="/login" element={<PublicRoute><LoginPage /></PublicRoute>} />
-          <Route path="/register" element={<PublicRoute><RegisterPage /></PublicRoute>} />
-          
-          {/* Protected Routes */}
-          <Route element={<ProtectedRoute><Layout /></ProtectedRoute>}>
-            <Route path="/" element={<HomePage />} />
-            <Route path="/add" element={<AddExpensePage />} />
-            <Route path="/insights" element={<InsightsPage />} />
-            <Route path="/settings" element={<SettingsPage />} />
-          </Route>
-        </Routes>
-      </BrowserRouter>
-    </QueryClientProvider>
+    <Routes>
+      <Route path="/" element={<LandingPage />} />
+
+      <Route
+        path="/login"
+        element={user ? <Navigate to="/dashboard" replace /> : <LoginPage />}
+      />
+      <Route
+        path="/register"
+        element={user ? <Navigate to="/dashboard" replace /> : <RegisterPage />}
+      />
+
+      <Route
+        element={
+          <ProtectedRoute>
+            <Layout />
+          </ProtectedRoute>
+        }
+      >
+        <Route path="/dashboard" element={<DashboardPage />} />
+        <Route path="/expenses" element={<ExpensesPage />} />
+        <Route path="/categories" element={<CategoriesPage />} />
+        <Route path="/payments" element={<PaymentPage />} />
+      </Route>
+
+      <Route path="*" element={<Navigate to={user ? "/dashboard" : "/"} replace />} />
+    </Routes>
   );
 }
-
-export default App;
