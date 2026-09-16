@@ -165,6 +165,7 @@ export default function HomePage() {
           time={time}
           hints={hints}
           categories={categories}
+          onCategoriesUpdate={(list) => setCategories(list)}
           apps={apps}
           accounts={accounts}
           onAppsUpdate={(list) => setApps(list)}
@@ -180,7 +181,7 @@ export default function HomePage() {
   );
 }
 
-function Wizard({ date, time, hints, categories, apps, accounts, onAppsUpdate, onAccountsUpdate, onDone, onBack }) {
+function Wizard({ date, time, hints, categories, apps, accounts, onCategoriesUpdate, onAppsUpdate, onAccountsUpdate, onDone, onBack }) {
   const [stepIdx, setStepIdx] = useState(0);
   const [submitting, setSubmitting] = useState(false);
   const [form, setForm] = useState(() => {
@@ -331,9 +332,17 @@ function Wizard({ date, time, hints, categories, apps, accounts, onAppsUpdate, o
               if (!cat?.subcategories?.length) goNext();
               else goNext();
             }}
-            onCreated={async () => {
+            onCreated={async (created) => {
               const updated = await categoryApi.list();
-              setCategories(updated || []);
+              onCategoriesUpdate(updated || []);
+              if (created?.id) {
+                set("categoryId", created.id);
+                set("subcategoryId", "");
+                const cat = (updated || []).find((c) => c.id === created.id);
+                const cHasSubs = cat?.subcategories?.length > 0;
+                const idx = flow.indexOf("subcategory");
+                setStepIdx(cHasSubs && idx !== -1 ? idx : flow.indexOf("note"));
+              }
             }}
           />
         )}
@@ -354,7 +363,9 @@ function Wizard({ date, time, hints, categories, apps, accounts, onAppsUpdate, o
                     await categoryApi.createSubcategory(form.categoryId, { name: name.trim() });
                     toast.success("Subcategory added");
                     const updated = await categoryApi.list();
-                    setCategories(updated || []);
+                    onCategoriesUpdate(updated || []);
+                    const cat = (updated || []).find((c) => c.id === form.categoryId);
+                    if (cat?.subcategories?.length) set("subcategoryId", cat.subcategories[cat.subcategories.length - 1].id);
                   } catch (e) { toast.error(getErrorMessage(e)); }
                 }}
                 className="text-sm font-medium text-primary-600 hover:text-primary-700 mt-4 select-none"
@@ -673,11 +684,11 @@ function CategoryStep({ categories, selectedId, frequentIds, onSelect, onCreated
     if (!newName.trim()) return;
     setCreating(true);
     try {
-      await categoryApi.create({ name: newName.trim(), icon: newIcon, color: "#4c6ef5" });
+      const created = await categoryApi.create({ name: newName.trim(), icon: newIcon, color: "#4c6ef5" });
       setNewName("");
       setNewIcon("💸");
       setShowCreate(false);
-      onCreated();
+      onCreated(created);
     } catch (e) {
       toast.error(getErrorMessage(e));
     } finally {
