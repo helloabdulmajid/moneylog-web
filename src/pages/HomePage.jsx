@@ -347,32 +347,18 @@ function Wizard({ date, time, hints, categories, apps, accounts, onCategoriesUpd
           />
         )}
         {currentStep === "subcategory" && (
-          <ChipSelectStep
-            title="Subcategory"
+          <SubcategoryStep
+            categoryId={form.categoryId}
             items={selectedCat?.subcategories || []}
             selected={form.subcategoryId}
             onSelect={(id) => { set("subcategoryId", id); goNext(); }}
-            renderLabel={(s) => s.name}
             onSkip={() => goNext()}
-            extra={
-              <button
-                onClick={async () => {
-                  const name = prompt("Subcategory name:");
-                  if (!name?.trim()) return;
-                  try {
-                    await categoryApi.createSubcategory(form.categoryId, { name: name.trim() });
-                    toast.success("Subcategory added");
-                    const updated = await categoryApi.list();
-                    onCategoriesUpdate(updated || []);
-                    const cat = (updated || []).find((c) => c.id === form.categoryId);
-                    if (cat?.subcategories?.length) set("subcategoryId", cat.subcategories[cat.subcategories.length - 1].id);
-                  } catch (e) { toast.error(getErrorMessage(e)); }
-                }}
-                className="text-sm font-medium text-primary-600 hover:text-primary-700 mt-4 select-none"
-              >
-                + New subcategory
-              </button>
-            }
+            onCreate={async (created) => {
+              const updated = await categoryApi.list();
+              onCategoriesUpdate(updated || []);
+              set("subcategoryId", created?.id || "");
+              goNext();
+            }}
           />
         )}
         {currentStep === "note" && (
@@ -468,11 +454,15 @@ function ChipSelectStep({ title, items, selected, onSelect, renderLabel, renderE
           );
         })}
       </div>
-      {extra}
-      {onSkip && (
-        <button onClick={onSkip} className="text-sm text-gray-400 hover:text-gray-600 mt-4 select-none">
-          Skip
-        </button>
+      {(extra || onSkip) && (
+        <div className="flex items-center justify-between mt-6">
+          <div>{extra}</div>
+          {onSkip && (
+            <button onClick={onSkip} className="text-sm font-medium text-red-400 hover:text-red-600 select-none">
+              Skip
+            </button>
+          )}
+        </div>
       )}
     </div>
   );
@@ -663,6 +653,96 @@ function AccountStep({ method, accounts, frequentIds, selected, onSelect, onCrea
           </button>
         </div>
       )}
+    </div>
+  );
+}
+
+function SubcategoryStep({ categoryId, items, selected, onSelect, onSkip, onCreate }) {
+  const [creating, setCreating] = useState(false);
+  const [name, setName] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+
+  const createSubcategory = async () => {
+    if (!name.trim()) return;
+    setSubmitting(true);
+    try {
+      const created = await categoryApi.createSubcategory(categoryId, { name: name.trim() });
+      toast.success("Subcategory added");
+      setName("");
+      setCreating(false);
+      onCreate(created);
+    } catch (e) {
+      toast.error(getErrorMessage(e));
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <div className="animate-fade-in pt-4">
+      <h2 className="text-lg font-semibold text-gray-900 mb-4">Subcategory</h2>
+
+      {creating ? (
+        <form
+          onSubmit={(e) => { e.preventDefault(); createSubcategory(); }}
+          className="bg-gray-50 rounded-xl p-4 mb-4 animate-slide-up"
+        >
+          <label className="label text-xs text-gray-400 uppercase tracking-wide mb-1.5">Subcategory name</label>
+          <input
+            type="text"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="e.g. Groceries"
+            className="input mb-3"
+            autoFocus
+          />
+          <div className="flex justify-end gap-2">
+            <button onClick={() => { setCreating(false); setName(""); }} className="btn-secondary !py-2 text-sm">
+              Cancel
+            </button>
+            <button type="submit" disabled={!name.trim() || submitting} className="btn-primary !py-2 text-sm">
+              {submitting && <Loader2 className="w-4 h-4 animate-spin" />}
+              Add
+            </button>
+          </div>
+        </form>
+      ) : (
+        <div className="flex flex-wrap gap-3">
+          {items.map((s) => {
+            const active = String(selected) === String(s.id);
+            return (
+              <button
+                key={s.id}
+                onClick={() => onSelect(s.id)}
+                className={`px-5 py-3 rounded-xl border text-sm font-medium transition active:scale-95 select-none ${
+                  active
+                    ? "border-primary-300 bg-primary-50 text-primary-700 ring-2 ring-primary-100"
+                    : "border-gray-200 bg-white text-gray-700 hover:bg-gray-50"
+                }`}
+              >
+                {s.name}
+              </button>
+            );
+          })}
+        </div>
+      )}
+
+      <div className="flex items-center justify-between mt-6">
+        <button
+          onClick={() => setCreating(true)}
+          className="px-5 py-3 rounded-xl border border-dashed border-gray-300 text-sm font-medium text-primary-600 hover:text-primary-700 hover:border-gray-400 transition select-none"
+        >
+          + New subcategory
+        </button>
+        {onSkip && (
+          <button
+            onClick={onSkip}
+            className="px-5 py-3 rounded-xl border border-gray-200 text-sm font-medium text-red-500 hover:text-red-600 hover:bg-red-50 transition select-none"
+          >
+            Skip
+          </button>
+        )}
+      </div>
     </div>
   );
 }

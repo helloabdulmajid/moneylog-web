@@ -8,7 +8,7 @@ export const PAYMENT_METHODS = [
   "OTHER",
 ];
 
-export const PAYMENT_APP_TYPES = ["UPI", "WALLET", "BANK_APP", "OTHER"];
+export const PAYMENT_APP_TYPES = ["UPI", "WALLET", "BANK_APP", "PAY_LATER", "OTHER"];
 
 export const ACCOUNT_TYPES = [
   "CREDIT_CARD",
@@ -16,6 +16,7 @@ export const ACCOUNT_TYPES = [
   "BANK_ACCOUNT",
   "WALLET",
   "CASH",
+  "PAY_LATER",
   "OTHER",
 ];
 
