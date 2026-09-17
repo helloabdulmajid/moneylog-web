@@ -9,43 +9,44 @@ import { PAYMENT_METHODS } from "../utils/constants.js";
 
 const METHODS_UI = [
   { value: "UPI", label: "UPI", icon: "💳" },
-  { value: "CREDIT_CARD", label: "Credit Card", icon: "💳" },
-  { value: "DEBIT_CARD", label: "Debit Card", icon: "💳" },
+  { value: "CARD", label: "Card", icon: "💳" },
   { value: "CASH", label: "Cash", icon: "💵" },
-  { value: "BANK_TRANSFER", label: "Bank", icon: "🏦" },
-  { value: "WALLET", label: "Wallet", icon: "👛" },
+  { value: "BANK_TRANSFER", label: "Bank Transfer", icon: "🏦" },
+  { value: "IMPS", label: "IMPS", icon: "🏦" },
+  { value: "NEFT", label: "NEFT", icon: "🏦" },
+  { value: "OTHER", label: "Other", icon: "💸" },
 ];
 
-const METHOD_NEEDS_APP = new Set(["UPI", "WALLET", "BANK_TRANSFER"]);
+const METHOD_NEEDS_APP = new Set(["UPI", "BANK_TRANSFER", "IMPS", "NEFT"]);
 const METHOD_NEEDS_ACCOUNT = new Set([
-  "UPI", "CREDIT_CARD", "DEBIT_CARD", "BANK_TRANSFER", "WALLET", "OTHER",
+  "UPI", "CARD", "BANK_TRANSFER", "IMPS", "NEFT", "OTHER",
 ]);
 
 function appsForMethod(method, apps) {
   const map = {
     UPI: ["UPI", "OTHER"],
-    WALLET: ["WALLET", "OTHER"],
     BANK_TRANSFER: ["BANK_APP", "OTHER"],
-    CREDIT_CARD: ["CREDIT_CARD", "OTHER"],
-    DEBIT_CARD: ["DEBIT_CARD", "OTHER"],
+    IMPS: ["BANK_APP", "OTHER"],
+    NEFT: ["BANK_APP", "OTHER"],
   };
   const types = map[method] || null;
   const filtered = types ? apps.filter((a) => types.includes(a.type)) : apps;
   return filtered.length > 0 ? filtered : apps;
 }
 
-function accountsForMethod(method, accounts) {
+function sourcesForMethod(method, sources) {
   const map = {
-    CREDIT_CARD: ["CREDIT_CARD"],
-    DEBIT_CARD: ["DEBIT_CARD"],
+    CARD: ["CREDIT_CARD"],
     BANK_TRANSFER: ["BANK_ACCOUNT"],
-    WALLET: ["WALLET"],
-    UPI: ["BANK_ACCOUNT", "WALLET"],
-    OTHER: ["BANK_ACCOUNT", "WALLET", "OTHER"],
+    IMPS: ["BANK_ACCOUNT"],
+    NEFT: ["BANK_ACCOUNT"],
+    CASH: ["CASH"],
+    UPI: ["BANK_ACCOUNT", "CREDIT_CARD", "WALLET"],
+    OTHER: ["BANK_ACCOUNT", "CREDIT_CARD", "WALLET", "CASH"],
   };
   const types = map[method] || null;
-  const filtered = types ? accounts.filter((a) => types.includes(a.type)) : accounts;
-  return filtered.length > 0 ? filtered : accounts;
+  const filtered = types ? sources.filter((s) => types.includes(s.type)) : sources;
+  return filtered.length > 0 ? filtered : sources;
 }
 
 function sortByFrequent(items, frequentIds, getId) {
@@ -55,12 +56,11 @@ function sortByFrequent(items, frequentIds, getId) {
   );
 }
 
-function buildFlow(method, categoryHasSubs) {
+function buildFlow(method) {
   const f = ["amount", "method"];
-  if (METHOD_NEEDS_APP.has(method)) f.push("app");
+  if (method !== "CASH") f.push("app");
   if (METHOD_NEEDS_ACCOUNT.has(method)) f.push("account");
-  f.push("category");
-  if (categoryHasSubs) f.push("subcategory");
+  f.push("category", "subcategory");
   f.push("note", "split");
   return f;
 }
@@ -86,19 +86,19 @@ export default function HomePage() {
   const [hints, setHints] = useState(null);
   const [categories, setCategories] = useState([]);
   const [apps, setApps] = useState([]);
-  const [accounts, setAccounts] = useState([]);
+  const [sources, setSources] = useState([]);
 
   useEffect(() => {
     Promise.all([
       expenseApi.entryHints(),
       categoryApi.list(),
       paymentApi.listApps(),
-      paymentApi.listAccounts(),
-    ]).then(([h, c, a, ac]) => {
+      paymentApi.listSources(),
+    ]).then(([h, c, a, s]) => {
       setHints(h || null);
       setCategories(c || []);
       setApps(a || []);
-      setAccounts(ac || []);
+      setSources(s || []);
     });
   }, []);
 
@@ -167,9 +167,9 @@ export default function HomePage() {
           categories={categories}
           onCategoriesUpdate={(list) => setCategories(list)}
           apps={apps}
-          accounts={accounts}
+          sources={sources}
           onAppsUpdate={(list) => setApps(list)}
-          onAccountsUpdate={(list) => setAccounts(list)}
+          onSourcesUpdate={(list) => setSources(list)}
           onDone={() => {
             setWizardOpen(false);
             toast.success("Expense saved");
@@ -181,7 +181,7 @@ export default function HomePage() {
   );
 }
 
-function Wizard({ date, time, hints, categories, apps, accounts, onCategoriesUpdate, onAppsUpdate, onAccountsUpdate, onDone, onBack }) {
+function Wizard({ date, time, hints, categories, apps, sources, onCategoriesUpdate, onAppsUpdate, onSourcesUpdate, onDone, onBack }) {
   const [stepIdx, setStepIdx] = useState(0);
   const [submitting, setSubmitting] = useState(false);
   const [form, setForm] = useState(() => {
@@ -190,7 +190,7 @@ function Wizard({ date, time, hints, categories, apps, accounts, onCategoriesUpd
       amount: "",
       paymentMethod: pref.paymentMethod || "",
       paymentAppId: pref.paymentAppId || "",
-      paymentAccountId: pref.paymentAccountId || "",
+      paymentSourceId: pref.paymentSourceId || "",
       categoryId: pref.categoryId || "",
       subcategoryId: pref.subcategoryId || "",
       notes: "",
@@ -201,7 +201,7 @@ function Wizard({ date, time, hints, categories, apps, accounts, onCategoriesUpd
   });
 
   const selectedCat = categories.find((c) => c.id === form.categoryId);
-  const flow = buildFlow(form.paymentMethod, selectedCat?.subcategories?.length > 0);
+  const flow = buildFlow(form.paymentMethod);
   const currentStep = flow[Math.min(stepIdx, flow.length - 1)];
 
   const goNext = () => setStepIdx((i) => Math.min(i + 1, flow.length - 1));
@@ -225,7 +225,7 @@ function Wizard({ date, time, hints, categories, apps, accounts, onCategoriesUpd
         expenseTime: time + ":00",
         paymentMethod: form.paymentMethod || null,
         paymentAppId: form.paymentAppId || null,
-        paymentAccountId: form.paymentAccountId || null,
+        paymentSourceId: form.paymentSourceId || null,
         categoryId: form.categoryId || null,
         subcategoryId: form.subcategoryId || null,
         notes: form.notes || null,
@@ -256,7 +256,7 @@ function Wizard({ date, time, hints, categories, apps, accounts, onCategoriesUpd
             stepIdx={stepIdx}
             form={form}
             apps={apps}
-            accounts={accounts}
+            sources={sources}
             categories={categories}
             onJump={(idx) => setStepIdx(idx)}
           />
@@ -278,11 +278,9 @@ function Wizard({ date, time, hints, categories, apps, accounts, onCategoriesUpd
             selected={form.paymentMethod}
             onSelect={(val) => {
               set("paymentMethod", val);
-              set("paymentAppId", "");
-              set("paymentAccountId", "");
+              set("paymentSourceId", "");
               if (val === "CASH" || !METHOD_NEEDS_ACCOUNT.has(val)) {
-                const cHasSubs = categories.find((c) => c.id === form.categoryId)?.subcategories?.length > 0;
-                const miniFlow = buildFlow(val, cHasSubs);
+                const miniFlow = buildFlow(val);
                 setStepIdx(miniFlow.indexOf("category"));
               } else {
                 goNext();
@@ -307,15 +305,15 @@ function Wizard({ date, time, hints, categories, apps, accounts, onCategoriesUpd
           />
         )}
         {currentStep === "account" && (
-          <AccountStep
+          <SourceStep
             method={form.paymentMethod}
-            accounts={accounts}
-            frequentIds={hints?.frequent?.accounts?.map((a) => a.id) || []}
-            selected={form.paymentAccountId}
-            onSelect={(id) => { set("paymentAccountId", id); goNext(); }}
-            onCreate={async (account) => {
-              set("paymentAccountId", account.id);
-              onAccountsUpdate([...accounts, account]);
+            sources={sources}
+            frequentIds={hints?.frequent?.sources?.map((s) => s.id) || []}
+            selected={form.paymentSourceId}
+            onSelect={(id) => { set("paymentSourceId", id); goNext(); }}
+            onCreate={async (source) => {
+              set("paymentSourceId", source.id);
+              onSourcesUpdate([...sources, source]);
               goNext();
             }}
           />
@@ -329,8 +327,8 @@ function Wizard({ date, time, hints, categories, apps, accounts, onCategoriesUpd
               set("categoryId", id);
               set("subcategoryId", "");
               const cat = categories.find((c) => c.id === id);
-              if (!cat?.subcategories?.length) goNext();
-              else goNext();
+              if (cat?.subcategories?.length) goNext();
+              else setStepIdx(flow.indexOf("note"));
             }}
             onCreated={async (created) => {
               const updated = await categoryApi.list();
@@ -338,10 +336,8 @@ function Wizard({ date, time, hints, categories, apps, accounts, onCategoriesUpd
               if (created?.id) {
                 set("categoryId", created.id);
                 set("subcategoryId", "");
-                const cat = (updated || []).find((c) => c.id === created.id);
-                const cHasSubs = cat?.subcategories?.length > 0;
                 const idx = flow.indexOf("subcategory");
-                setStepIdx(cHasSubs && idx !== -1 ? idx : flow.indexOf("note"));
+                setStepIdx(idx !== -1 ? idx : flow.indexOf("note"));
               }
             }}
           />
@@ -473,8 +469,8 @@ function AppStep({ method, apps, frequentIds, selected, onSelect, onCreate }) {
   const [name, setName] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
-  const typeMap = { UPI: "UPI", WALLET: "WALLET", BANK_TRANSFER: "BANK_APP", CREDIT_CARD: "CREDIT_CARD", DEBIT_CARD: "DEBIT_CARD" };
-  const type = typeMap[method] || "OTHER";
+  const typeMap = { UPI: "UPI", BANK_TRANSFER: "BANK_APP", IMPS: "BANK_APP", NEFT: "BANK_APP" };
+  const type = typeMap[method] || "UPI";
 
   const submit = async (e) => {
     e.preventDefault();
@@ -487,6 +483,15 @@ function AppStep({ method, apps, frequentIds, selected, onSelect, onCreate }) {
       setCreating(false);
       onCreate(created);
     } catch (err) {
+      const msg = getErrorMessage(err).toLowerCase();
+      const existing = apps.find((a) => a.name.toLowerCase() === name.trim().toLowerCase());
+      if (msg.includes("already exists") && existing) {
+        toast.success("App added");
+        setName("");
+        setCreating(false);
+        onCreate(existing);
+        return;
+      }
       toast.error(getErrorMessage(err));
     } finally {
       setSubmitting(false);
@@ -546,7 +551,7 @@ function AppStep({ method, apps, frequentIds, selected, onSelect, onCreate }) {
   );
 }
 
-function AccountStep({ method, accounts, frequentIds, selected, onSelect, onCreate }) {
+function SourceStep({ method, sources, frequentIds, selected, onSelect, onCreate }) {
   const [creating, setCreating] = useState(false);
   const [name, setName] = useState("");
   const [bankName, setBankName] = useState("");
@@ -554,33 +559,45 @@ function AccountStep({ method, accounts, frequentIds, selected, onSelect, onCrea
   const [submitting, setSubmitting] = useState(false);
 
   const typeMap = {
-    CREDIT_CARD: "CREDIT_CARD",
-    DEBIT_CARD: "DEBIT_CARD",
+    CARD: "CREDIT_CARD",
     BANK_TRANSFER: "BANK_ACCOUNT",
-    WALLET: "WALLET",
+    IMPS: "BANK_ACCOUNT",
+    NEFT: "BANK_ACCOUNT",
     UPI: "BANK_ACCOUNT",
-    OTHER: "OTHER",
+    CASH: "CASH",
+    OTHER: "BANK_ACCOUNT",
   };
-  const type = typeMap[method] || "OTHER";
+  const type = typeMap[method] || "BANK_ACCOUNT";
 
   const submit = async (e) => {
     e.preventDefault();
     if (!name.trim()) return;
     setSubmitting(true);
     try {
-      const created = await paymentApi.createAccount({
+      const created = await paymentApi.createSource({
         name: name.trim(),
         bankName: bankName.trim() || null,
         lastFourDigits: lastFourDigits.trim().replace(/\D/g, "").slice(0, 4) || null,
         type,
       });
-      toast.success("Account added");
+      toast.success("Source added");
       setName("");
       setBankName("");
       setLastFourDigits("");
       setCreating(false);
       onCreate(created);
     } catch (err) {
+      const msg = getErrorMessage(err).toLowerCase();
+      const existing = sources.find((s) => s.name.toLowerCase() === name.trim().toLowerCase());
+      if (msg.includes("already exists") && existing) {
+        toast.success("Source added");
+        setName("");
+        setBankName("");
+        setLastFourDigits("");
+        setCreating(false);
+        onCreate(existing);
+        return;
+      }
       toast.error(getErrorMessage(err));
     } finally {
       setSubmitting(false);
@@ -589,14 +606,14 @@ function AccountStep({ method, accounts, frequentIds, selected, onSelect, onCrea
 
   return (
     <div className="animate-fade-in pt-4">
-      <h2 className="text-lg font-semibold text-gray-900 mb-4">Which account?</h2>
+      <h2 className="text-lg font-semibold text-gray-900 mb-4">Which source?</h2>
       {creating ? (
         <form onSubmit={submit} className="bg-gray-50 rounded-xl p-4 mb-4 animate-slide-up">
           <input
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder="Account name e.g. HDFC Savings"
+            placeholder="Source name e.g. HDFC Savings"
             className="input mb-3"
             autoFocus
           />
@@ -627,13 +644,13 @@ function AccountStep({ method, accounts, frequentIds, selected, onSelect, onCrea
         </form>
       ) : (
         <div className="flex flex-wrap gap-3">
-          {sortByFrequent(accountsForMethod(method, accounts), frequentIds, (a) => a.id).map((a) => {
-            const active = String(selected) === String(a.id);
-            const label = a.bankName ? `${a.name} · ${a.bankName}` : a.name;
+          {sortByFrequent(sourcesForMethod(method, sources), frequentIds, (s) => s.id).map((s) => {
+            const active = String(selected) === String(s.id);
+            const label = s.bankName ? `${s.name} · ${s.bankName}` : s.name;
             return (
               <button
-                key={a.id}
-                onClick={() => onSelect(a.id)}
+                key={s.id}
+                onClick={() => onSelect(s.id)}
                 className={`flex items-center gap-2.5 px-5 py-3 rounded-xl border text-sm font-medium transition active:scale-95 select-none ${
                   active
                     ? "border-primary-300 bg-primary-50 text-primary-700 ring-2 ring-primary-100"
@@ -641,7 +658,7 @@ function AccountStep({ method, accounts, frequentIds, selected, onSelect, onCrea
                 }`}
               >
                 <span>{label}</span>
-                {a.lastFourDigits && <span className="text-xs text-gray-400">•••• {a.lastFourDigits}</span>}
+                {s.lastFourDigits && <span className="text-xs text-gray-400">•••• {s.lastFourDigits}</span>}
               </button>
             );
           })}
@@ -649,7 +666,7 @@ function AccountStep({ method, accounts, frequentIds, selected, onSelect, onCrea
             onClick={() => setCreating(true)}
             className="px-5 py-3 rounded-xl border border-dashed border-gray-300 text-sm font-medium text-gray-400 hover:text-gray-600 hover:border-gray-400 transition select-none"
           >
-            + New account
+            + New source
           </button>
         </div>
       )}
@@ -672,6 +689,15 @@ function SubcategoryStep({ categoryId, items, selected, onSelect, onSkip, onCrea
       setCreating(false);
       onCreate(created);
     } catch (e) {
+      const msg = getErrorMessage(e).toLowerCase();
+      const existing = items.find((s) => s.name.toLowerCase() === name.trim().toLowerCase());
+      if (msg.includes("already exists") && existing) {
+        toast.success("Subcategory added");
+        setName("");
+        setCreating(false);
+        onCreate(existing);
+        return;
+      }
       toast.error(getErrorMessage(e));
     } finally {
       setSubmitting(false);
@@ -770,6 +796,15 @@ function CategoryStep({ categories, selectedId, frequentIds, onSelect, onCreated
       setShowCreate(false);
       onCreated(created);
     } catch (e) {
+      const msg = getErrorMessage(e).toLowerCase();
+      const existing = categories.find((c) => c.name.toLowerCase() === newName.trim().toLowerCase());
+      if (msg.includes("already exists") && existing) {
+        setNewName("");
+        setNewIcon("💸");
+        setShowCreate(false);
+        onCreated(existing);
+        return;
+      }
       toast.error(getErrorMessage(e));
     } finally {
       setCreating(false);
@@ -948,7 +983,7 @@ function SplitStep({ form, onChange, amount, submitting, onSave, onBack }) {
   );
 }
 
-function ProgressSteps({ flow, stepIdx, form, apps, accounts, categories, onJump }) {
+function ProgressSteps({ flow, stepIdx, form, apps, sources, categories, onJump }) {
   const steps = [];
   flow.forEach((step, idx) => {
     if (idx >= stepIdx) return;
@@ -960,8 +995,8 @@ function ProgressSteps({ flow, stepIdx, form, apps, accounts, categories, onJump
     } else if (step === "app") {
       label = apps.find((a) => String(a.id) === String(form.paymentAppId))?.name || null;
     } else if (step === "account") {
-      const acct = accounts.find((a) => String(a.id) === String(form.paymentAccountId));
-      label = acct ? (acct.bankName ? `${acct.name} · ${acct.bankName}` : acct.name) : null;
+      const src = sources.find((s) => String(s.id) === String(form.paymentSourceId));
+      label = src ? (src.bankName ? `${src.name} · ${src.bankName}` : src.name) : null;
     } else if (step === "category") {
       label = categories.find((c) => c.id === form.categoryId)?.name || null;
     } else if (step === "subcategory") {

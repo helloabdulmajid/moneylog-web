@@ -10,6 +10,8 @@ import HomePage from "./pages/HomePage.jsx";
 import ExpensesPage from "./pages/ExpensesPage.jsx";
 import CategoriesPage from "./pages/CategoriesPage.jsx";
 import PaymentPage from "./pages/PaymentPage.jsx";
+import CreditCardsPage from "./pages/CreditCardsPage.jsx";
+import BillPaymentsPage from "./pages/BillPaymentsPage.jsx";
 
 export default function App() {
   const { user } = useAuth();
@@ -41,6 +43,8 @@ export default function App() {
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/expenses" element={<ExpensesPage />} />
         <Route path="/categories" element={<CategoriesPage />} />
+        <Route path="/credit-cards" element={<CreditCardsPage />} />
+        <Route path="/bill-payments" element={<BillPaymentsPage />} />
         <Route path="/payments" element={<PaymentPage />} />
       </Route>
 

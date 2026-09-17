@@ -6,11 +6,11 @@ import PageHeader from "../components/PageHeader.jsx";
 import Modal from "../components/Modal.jsx";
 import Loading from "../components/Loading.jsx";
 import { getErrorMessage, toTitleCase } from "../utils/helpers.js";
-import { PAYMENT_APP_TYPES, ACCOUNT_TYPES } from "../utils/constants.js";
+import { PAYMENT_APP_TYPES, PAYMENT_SOURCE_TYPES } from "../utils/constants.js";
 
 export default function PaymentPage() {
   const [apps, setApps] = useState([]);
-  const [accounts, setAccounts] = useState([]);
+  const [sources, setSources] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("apps");
   const [modal, setModal] = useState(null); // { type, data }
@@ -18,12 +18,12 @@ export default function PaymentPage() {
   const load = async () => {
     setLoading(true);
     try {
-      const [appsRes, accountsRes] = await Promise.all([
+      const [appsRes, sourcesRes] = await Promise.all([
         paymentApi.listApps(),
-        paymentApi.listAccounts(),
+        paymentApi.listSources(),
       ]);
       setApps(appsRes || []);
-      setAccounts(accountsRes || []);
+      setSources(sourcesRes || []);
     } finally {
       setLoading(false);
     }
@@ -37,8 +37,8 @@ export default function PaymentPage() {
     if (!window.confirm("Delete this item?")) return;
     try {
       if (type === "app") await paymentApi.removeApp(id);
-      else await paymentApi.removeAccount(id);
-      toast.success(`${type === "app" ? "App" : "Account"} deleted`);
+      else await paymentApi.removeSource(id);
+      toast.success(`${type === "app" ? "App" : "Source"} deleted`);
       load();
     } catch (error) {
       toast.error(getErrorMessage(error));
@@ -47,20 +47,20 @@ export default function PaymentPage() {
 
   const tabs = [
     { id: "apps", label: "Payment apps", count: apps.length },
-    { id: "accounts", label: "Accounts", count: accounts.length },
+    { id: "sources", label: "Sources", count: sources.length },
   ];
 
   return (
     <div>
       <PageHeader
         title="Payment Methods"
-        subtitle="Apps and accounts you use to pay"
+        subtitle="Apps and sources you use to pay"
         action={
           <button
             className="btn-primary"
-            onClick={() => setModal({ type: activeTab === "apps" ? "app" : "account" })}
+            onClick={() => setModal({ type: activeTab === "apps" ? "app" : "source" })}
           >
-            <Plus className="w-4 h-4" /> Add {activeTab === "apps" ? "app" : "account"}
+            <Plus className="w-4 h-4" /> Add {activeTab === "apps" ? "app" : "source"}
           </button>
         }
       />
@@ -98,11 +98,11 @@ export default function PaymentPage() {
           onDelete={(app) => handleDelete("app", app.id)}
         />
       ) : (
-        <AccountsGrid
-          accounts={accounts}
-          onAdd={() => setModal({ type: "account" })}
-          onEdit={(account) => setModal({ type: "account", data: account })}
-          onDelete={(account) => handleDelete("account", account.id)}
+        <SourcesGrid
+          sources={sources}
+          onAdd={() => setModal({ type: "source" })}
+          onEdit={(source) => setModal({ type: "source", data: source })}
+          onDelete={(source) => handleDelete("source", source.id)}
         />
       )}
 
@@ -160,16 +160,16 @@ function AppsGrid({ apps, onAdd, onEdit, onDelete }) {
   );
 }
 
-function AccountsGrid({ accounts, onAdd, onEdit, onDelete }) {
-  if (accounts.length === 0) {
+function SourcesGrid({ sources, onAdd, onEdit, onDelete }) {
+  if (sources.length === 0) {
     return (
       <div className="card p-12 text-center">
         <div className="flex items-center justify-center w-12 h-12 rounded-full bg-primary-50 text-primary-600 mx-auto mb-3">
           <Wallet className="w-6 h-6" />
         </div>
-        <p className="text-sm text-gray-500 mb-4">No payment accounts yet.</p>
+        <p className="text-sm text-gray-500 mb-4">No payment sources yet.</p>
         <button className="btn-primary" onClick={onAdd}>
-          <Plus className="w-4 h-4" /> Add your first account
+          <Plus className="w-4 h-4" /> Add your first source
         </button>
       </div>
     );
@@ -177,46 +177,46 @@ function AccountsGrid({ accounts, onAdd, onEdit, onDelete }) {
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-      {accounts.map((account) => (
-        <div key={account.id} className="card p-5">
+      {sources.map((source) => (
+        <div key={source.id} className="card p-5">
           <div className="flex items-start justify-between mb-3">
             <div className="flex items-center gap-3">
               <div className="flex items-center justify-center w-11 h-11 rounded-xl bg-emerald-50 text-emerald-600">
                 <Wallet className="w-5 h-5" />
               </div>
               <div>
-                <p className="font-semibold">{account.name}</p>
+                <p className="font-semibold">{source.name}</p>
                 <p className="text-xs text-gray-400">
-                  {toTitleCase(account.type)}
-                  {account.bankName ? ` • ${account.bankName}` : ""}
+                  {toTitleCase(source.type)}
+                  {source.bankName ? ` • ${source.bankName}` : ""}
                 </p>
               </div>
             </div>
             <div className="flex items-center">
-              <button className="btn-icon" onClick={() => onEdit(account)}>
+              <button className="btn-icon" onClick={() => onEdit(source)}>
                 <Pencil className="w-4 h-4" />
               </button>
-              <button className="btn-icon hover:text-red-600" onClick={() => onDelete(account)}>
+              <button className="btn-icon hover:text-red-600" onClick={() => onDelete(source)}>
                 <Trash2 className="w-4 h-4" />
               </button>
             </div>
           </div>
           <div className="flex items-center justify-between">
-            {account.lastFourDigits ? (
+            {source.lastFourDigits ? (
               <span className="text-sm text-gray-500 font-medium">
-                •••• {account.lastFourDigits}
+                •••• {source.lastFourDigits}
               </span>
             ) : (
               <span />
             )}
             <span
               className={`badge ${
-                account.isActive
+                source.isActive
                   ? "bg-emerald-50 text-emerald-600"
                   : "bg-gray-100 text-gray-400"
               }`}
             >
-              {account.isActive ? "Active" : "Inactive"}
+              {source.isActive ? "Active" : "Inactive"}
             </span>
           </div>
         </div>
@@ -239,7 +239,7 @@ function PaymentModal({ modal, onClose, onSaved }) {
   useEffect(() => {
     if (modal) {
       setName(item?.name || "");
-      setType(item?.type || (isApp ? PAYMENT_APP_TYPES[0] : ACCOUNT_TYPES[0]));
+      setType(item?.type || (isApp ? PAYMENT_APP_TYPES[0] : PAYMENT_SOURCE_TYPES[0]));
       setBankName(item?.bankName || "");
       setLastFourDigits(item?.lastFourDigits || "");
     }
@@ -257,8 +257,8 @@ function PaymentModal({ modal, onClose, onSaved }) {
         else await paymentApi.createApp(payload);
       } else {
         const payload = { name, type, bankName: bankName || null, lastFourDigits: lastFourDigits || null };
-        if (isEdit) await paymentApi.updateAccount(item.id, payload);
-        else await paymentApi.createAccount(payload);
+        if (isEdit) await paymentApi.updateSource(item.id, payload);
+        else await paymentApi.createSource(payload);
       }
       toast.success("Saved successfully");
       onSaved();
@@ -279,8 +279,8 @@ function PaymentModal({ modal, onClose, onSaved }) {
             ? "Edit payment app"
             : "New payment app"
           : isEdit
-          ? "Edit account"
-          : "New account"
+          ? "Edit source"
+          : "New source"
       }
     >
       <form onSubmit={handleSubmit} className="space-y-4">
@@ -299,7 +299,7 @@ function PaymentModal({ modal, onClose, onSaved }) {
         <div>
           <label className="label">Type *</label>
           <select className="input" value={type} onChange={(e) => setType(e.target.value)}>
-            {(isApp ? PAYMENT_APP_TYPES : ACCOUNT_TYPES).map((t) => (
+            {(isApp ? PAYMENT_APP_TYPES : PAYMENT_SOURCE_TYPES).map((t) => (
               <option key={t} value={t}>
                 {toTitleCase(t)}
               </option>

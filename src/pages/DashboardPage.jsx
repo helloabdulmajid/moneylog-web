@@ -18,7 +18,7 @@ import { formatCurrency, formatDate } from "../utils/helpers.js";
 export default function DashboardPage() {
   const [recent, setRecent] = useState([]);
   const [categories, setCategories] = useState([]);
-  const [accounts, setAccounts] = useState([]);
+  const [sources, setSources] = useState([]);
   const [stats, setStats] = useState({ totalThisMonth: 0, allTime: 0 });
   const [loading, setLoading] = useState(true);
 
@@ -26,11 +26,11 @@ export default function DashboardPage() {
     const now = new Date();
     const load = async () => {
       try {
-        const [recentRes, categoriesRes, accountsRes, monthRes, allRes] =
+        const [recentRes, categoriesRes, sourcesRes, monthRes, allRes] =
           await Promise.all([
             expenseApi.recent(),
             categoryApi.list(),
-            paymentApi.listAccounts(),
+            paymentApi.listSources(),
             expenseApi.list({ month: now.getMonth() + 1, year: now.getFullYear(), size: 100 }),
             expenseApi.list({ size: 1000 }),
           ]);
@@ -41,7 +41,7 @@ export default function DashboardPage() {
         setStats({ totalThisMonth, allTime });
         setRecent(recentRes || []);
         setCategories(categoriesRes || []);
-        setAccounts(accountsRes || []);
+        setSources(sourcesRes || []);
       } finally {
         setLoading(false);
       }
@@ -79,8 +79,8 @@ export default function DashboardPage() {
         />
         <StatCard
           icon={CreditCard}
-          label="Payment accounts"
-          value={accounts.length}
+          label="Payment sources"
+          value={sources.length}
           accent="bg-amber-50 text-amber-600"
         />
       </div>
@@ -158,7 +158,7 @@ export default function DashboardPage() {
               to="/payments"
               icon={CreditCard}
               label="Payment methods"
-              desc="Apps and accounts"
+              desc="Apps and sources"
             />
           </div>
         </div>

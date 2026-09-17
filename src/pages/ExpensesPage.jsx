@@ -16,7 +16,7 @@ import {
 import {
   PAYMENT_METHODS,
   PAYMENT_APP_TYPES,
-  ACCOUNT_TYPES,
+  PAYMENT_SOURCE_TYPES,
 } from "../utils/constants.js";
 
 const EMPTY_FORM = {
@@ -27,7 +27,7 @@ const EMPTY_FORM = {
   subcategoryId: "",
   paymentMethod: "",
   paymentAppId: "",
-  paymentAccountId: "",
+  paymentSourceId: "",
   notes: "",
   purpose: "",
   isSplit: false,
@@ -43,7 +43,7 @@ export default function ExpensesPage() {
   });
   const [categories, setCategories] = useState([]);
   const [apps, setApps] = useState([]);
-  const [accounts, setAccounts] = useState([]);
+  const [sources, setSources] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState({ month: "", year: "", categoryId: "" });
@@ -80,14 +80,14 @@ export default function ExpensesPage() {
 
   useEffect(() => {
     const loadRefs = async () => {
-      const [cats, appsRes, accountsRes] = await Promise.all([
+      const [cats, appsRes, sourcesRes] = await Promise.all([
         categoryApi.list(),
         paymentApi.listApps(),
-        paymentApi.listAccounts(),
+        paymentApi.listSources(),
       ]);
       setCategories(cats || []);
       setApps(appsRes || []);
-      setAccounts(accountsRes || []);
+      setSources(sourcesRes || []);
     };
     loadRefs();
     loadExpenses();
@@ -232,7 +232,7 @@ export default function ExpensesPage() {
                       {formatDate(expense.expenseDate)}
                     </td>
                     <td className="px-4 py-3 hidden md:table-cell">
-                      {expense.paymentAccount?.name || (
+                      {expense.paymentSource?.name || (
                         <span className="text-gray-300">—</span>
                       )}
                     </td>
@@ -296,7 +296,7 @@ export default function ExpensesPage() {
           expense={editing === "new" ? null : editing}
           categories={categories}
           apps={apps}
-          accounts={accounts}
+          sources={sources}
           onClose={() => setEditing(null)}
           onSaved={handleSaved}
         />
@@ -335,7 +335,7 @@ export default function ExpensesPage() {
   }
 }
 
-function ExpenseFormModal({ expense, categories, apps, accounts, onClose, onSaved }) {
+function ExpenseFormModal({ expense, categories, apps, sources, onClose, onSaved }) {
   const isEdit = !!expense;
   const [form, setForm] = useState(() =>
     isEdit
@@ -347,7 +347,7 @@ function ExpenseFormModal({ expense, categories, apps, accounts, onClose, onSave
           subcategoryId: expense.subcategory?.id || "",
           paymentMethod: expense.paymentMethod || "",
           paymentAppId: expense.paymentApp?.id || "",
-          paymentAccountId: expense.paymentAccount?.id || "",
+          paymentSourceId: expense.paymentSource?.id || "",
           notes: expense.notes || "",
           purpose: expense.purpose || "",
           isSplit: expense.isSplit || false,
@@ -380,7 +380,7 @@ function ExpenseFormModal({ expense, categories, apps, accounts, onClose, onSave
         subcategoryId: form.subcategoryId || null,
         paymentMethod: form.paymentMethod || null,
         paymentAppId: form.paymentAppId || null,
-        paymentAccountId: form.paymentAccountId || null,
+        paymentSourceId: form.paymentSourceId || null,
         notes: form.notes || null,
         purpose: form.purpose || null,
         isSplit: form.isSplit,
@@ -497,12 +497,12 @@ function ExpenseFormModal({ expense, categories, apps, accounts, onClose, onSave
             </select>
           </div>
           <div>
-            <label className="label">Payment account</label>
-            <select name="paymentAccountId" className="input" value={form.paymentAccountId} onChange={handleChange}>
-              <option value="">Select account</option>
-              {accounts.map((a) => (
-                <option key={a.id} value={a.id}>
-                  {a.name}
+            <label className="label">Payment source</label>
+            <select name="paymentSourceId" className="input" value={form.paymentSourceId} onChange={handleChange}>
+              <option value="">Select source</option>
+              {sources.map((s) => (
+                <option key={s.id} value={s.id}>
+                  {s.name}
                 </option>
               ))}
             </select>

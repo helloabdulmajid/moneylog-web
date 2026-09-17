@@ -7,10 +7,7 @@ export default defineConfig({
     port: 5173,
      allowedHosts: ['localui.abdulmajid.in', '.abdulmajid.in'],
     proxy: {
-      "/auth": "http://localhost:8080",
-      "/expenses": "http://localhost:8080",
-      "/categories": "http://localhost:8080",
-      "/payment": "http://localhost:8080",
+      "/api": "http://localhost:8080",
     },
   },
 });

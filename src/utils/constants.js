@@ -1,23 +1,32 @@
 export const PAYMENT_METHODS = [
   "UPI",
-  "CREDIT_CARD",
-  "DEBIT_CARD",
+  "CARD",
   "CASH",
   "BANK_TRANSFER",
-  "WALLET",
+  "IMPS",
+  "NEFT",
   "OTHER",
 ];
 
 export const PAYMENT_APP_TYPES = ["UPI", "WALLET", "BANK_APP", "PAY_LATER", "OTHER"];
 
-export const ACCOUNT_TYPES = [
-  "CREDIT_CARD",
-  "DEBIT_CARD",
+export const PAYMENT_SOURCE_TYPES = [
   "BANK_ACCOUNT",
+  "CREDIT_CARD",
   "WALLET",
   "CASH",
-  "PAY_LATER",
-  "OTHER",
+];
+
+export const CARD_NETWORKS = ["VISA", "MASTERCARD", "RUPAY", "AMEX", "OTHER"];
+
+export const PAY_CHANNEL_SUGGESTIONS = [
+  "CRED",
+  "MobiKwik",
+  "PhonePe",
+  "GPay",
+  "Paytm",
+  "Bank App",
+  "Card Issuer App",
 ];
 
 export const CATEGORY_COLORS = [
