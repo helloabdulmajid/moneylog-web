@@ -106,24 +106,49 @@ export default function ResetPasswordPage() {
           </div>
           <div>
             <label className={labelClass}>Confirm New Password</label>
-            <input
-              type={showPassword ? "text" : "password"}
-              name="confirm"
-              required
-              minLength={6}
-              autoComplete="new-password"
-              placeholder="Re-enter new password"
-              className={inputClass}
-              value={form.confirm}
-              onChange={(e) => setForm({ ...form, confirm: e.target.value })}
-            />
+            <div className="relative">
+              <input
+                type={showPassword ? "text" : "password"}
+                name="confirm"
+                required
+                minLength={6}
+                autoComplete="new-password"
+                placeholder="Re-enter new password"
+                className={inputClass + " pr-11"}
+                value={form.confirm}
+                onChange={(e) => setForm({ ...form, confirm: e.target.value })}
+              />
+              <button
+                type="button"
+                className={eyeClass}
+                aria-label={showPassword ? "Hide password" : "Show password"}
+                onClick={() => setShowPassword((s) => !s)}
+              >
+                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
+            </div>
+            {form.confirm && (
+              form.password === form.confirm ? (
+                <p className="mt-1.5 flex items-center gap-1.5 text-xs font-medium text-brand-deep dark:text-[#8FD0B4]">
+                  <CheckCircle2 className="w-3.5 h-3.5" /> Passwords match
+                </p>
+              ) : (
+                <p className="mt-1.5 flex items-center gap-1.5 text-xs font-medium text-accent-sienna dark:text-[#F0865A]">
+                  <CheckCircle2 className="w-3.5 h-3.5 opacity-0" /> Passwords don't match
+                </p>
+              )
+            )}
           </div>
           {errorMessage && (
             <p className="text-sm font-medium text-accent-sienna dark:text-[#F0865A]">
               {errorMessage}
             </p>
           )}
-          <button type="submit" disabled={submitting} className="btn-landing-primary w-full !py-3">
+          <button
+            type="submit"
+            disabled={submitting || !form.password || !form.confirm || form.password !== form.confirm}
+            className="btn-landing-primary w-full !py-3"
+          >
             {submitting && <Loader2 className="w-4 h-4 animate-spin" />}
             {submitting ? "Resetting..." : "Reset Password"}
           </button>

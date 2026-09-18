@@ -27,7 +27,7 @@
 
 @layer components {
   .btn-landing {
-    @apply inline-flex items-center justify-center gap-2 font-display text-sm font-semibold rounded-full transition duration-200 active:scale-95;
+    @apply inline-flex items-center justify-center gap-2 font-display text-sm font-semibold rounded-full transition duration-200 active:scale-95 disabled:opacity-50 disabled:pointer-events-none;
   }
 
   .btn-landing-primary {
