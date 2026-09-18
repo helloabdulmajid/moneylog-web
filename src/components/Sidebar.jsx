@@ -20,19 +20,22 @@ export default function Sidebar({ open, onClose }) {
         />
       )}
       <aside
-        className={`fixed lg:sticky top-0 z-40 h-screen w-64 bg-brand-deep flex flex-col transition-transform duration-200 lg:translate-x-0 overflow-y-auto ${
+        aria-hidden={!open}
+        className={`fixed lg:sticky top-0 z-40 h-screen w-64 bg-[color:var(--sb)] flex flex-col transition-transform duration-200 ease-out lg:translate-x-0 overflow-y-auto ${
           open ? "translate-x-0" : "-translate-x-full"
         }`}
       >
         <div className="flex items-center gap-3 px-6 py-6">
-          <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-paper-card text-brand-deep font-display font-bold text-lg shadow-sm">
+          <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-[color:var(--sb-active-bg)] text-[color:var(--sb-active-fg)] font-display font-bold text-lg shadow-sm">
             M
           </div>
           <div>
-            <p className="font-display font-bold leading-tight text-paper-card">
+            <p className="font-display font-bold leading-tight text-[color:var(--sb-hi)]">
               MoneyLog
             </p>
-            <p className="text-xs text-brand-mint/80">Chai first. Ledger later.</p>
+            <p className="text-xs text-[color:var(--sb-lo)]">
+              Chai first. Ledger later.
+            </p>
           </div>
         </div>
 
@@ -45,8 +48,8 @@ export default function Sidebar({ open, onClose }) {
               className={({ isActive }) =>
                 `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition ${
                   isActive
-                    ? "bg-paper-card text-brand-deep"
-                    : "text-brand-mint/80 hover:bg-white/10 hover:text-paper-card"
+                    ? "bg-[color:var(--sb-active-bg)] text-[color:var(--sb-active-fg)]"
+                    : "text-[color:var(--sb-lo)] hover:bg-[color:var(--sb-hover)] hover:text-[color:var(--sb-hi)]"
                 }`
               }
             >
@@ -56,27 +59,27 @@ export default function Sidebar({ open, onClose }) {
           ))}
         </nav>
 
-        <div className="p-4 border-t border-white/10">
+        <div className="p-4 border-t border-[color:var(--sb-divider)]">
           <NavLink
             to="/app/profile"
             onClick={onClose}
-            className="flex items-center gap-3 mb-3 px-1 py-1 rounded-lg hover:bg-white/10 transition"
+            className="flex items-center gap-3 mb-3 px-1 py-1 rounded-lg hover:bg-[color:var(--sb-hover)] transition"
           >
-            <div className="flex items-center justify-center w-9 h-9 rounded-full bg-white/15 text-paper-card font-semibold text-sm">
+            <div className="flex items-center justify-center w-9 h-9 rounded-full bg-[color:var(--sb-bubble-bg)] text-[color:var(--sb-hi)] font-semibold text-sm">
               {user?.name?.charAt(0)?.toUpperCase() || "U"}
             </div>
             <div className="min-w-0">
-              <p className="text-sm font-medium text-paper-card truncate">
+              <p className="text-sm font-medium text-[color:var(--sb-hi)] truncate">
                 {user?.name}
               </p>
-              <p className="text-xs text-brand-mint/70 truncate">
+              <p className="text-xs text-[color:var(--sb-lo)] truncate">
                 {user?.email}
               </p>
             </div>
           </NavLink>
           <button
             onClick={handleLogout}
-            className="flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm font-medium text-[#F0A67C] hover:bg-white/10 hover:text-[#F8CDB4] transition"
+            className="flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm font-medium text-[color:var(--sb-logout)] hover:bg-[color:var(--sb-hover)] hover:text-[color:var(--sb-hi)] transition"
           >
             <LogOut className="w-5 h-5" />
             Logout

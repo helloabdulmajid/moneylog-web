@@ -98,13 +98,13 @@ export default function AuthLayout({
 
           <Link
             to={backTo.to}
-            className="inline-flex items-center gap-1.5 text-sm font-medium text-ink-muted hover:text-ink dark:text-[#9A907C] dark:hover:text-[#EDE7DA] mb-6 transition-colors"
+            className="flex items-center gap-1.5 text-sm font-medium text-ink-muted hover:text-ink dark:text-[#9A907C] dark:hover:text-[#EDE7DA] mb-10 transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
             {backTo.label}
           </Link>
 
-          <span className="inline-flex items-center gap-1.5 text-[11px] uppercase tracking-[.18em] font-semibold font-ledger text-ink-muted dark:text-[#9A907C] border border-ink/10 dark:border-[#2A2418] rounded-full px-3 py-1 mb-5">
+          <span className="inline-flex items-center gap-1.5 text-[11px] uppercase tracking-[.18em] font-semibold font-ledger text-ink-muted dark:text-[#9A907C] border border-ink/10 dark:border-[#2A2418] rounded-full px-3 py-1 mb-5 block w-fit">
             <span className="w-1.5 h-1.5 rounded-full bg-brand-deep dark:bg-brand-pine" />
             {eyebrow}
           </span>

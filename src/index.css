@@ -7,6 +7,19 @@
     font-family: "Space Grotesk", ui-sans-serif, system-ui, -apple-system,
       "Segoe UI", Roboto, sans-serif;
   }
+
+  /* Sidebar palette: lilac #6E6D8E (same in light and dark modes). */
+  :root {
+    --sb: #6e6d8e;
+    --sb-hi: #fffdf6;
+    --sb-lo: rgba(226, 228, 244, 0.85);
+    --sb-hover: rgba(255, 255, 255, 0.1);
+    --sb-active-bg: #fffdf6;
+    --sb-active-fg: #454674;
+    --sb-bubble-bg: rgba(255, 255, 255, 0.16);
+    --sb-logout: #e9a87e;
+    --sb-divider: rgba(255, 255, 255, 0.12);
+  }
 }
 
 @layer utilities {
