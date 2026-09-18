@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Wallet, Eye, EyeOff, Loader2, ArrowLeft, MailWarning } from "lucide-react";
+import { Eye, EyeOff, Loader2, MailWarning } from "lucide-react";
 import toast from "react-hot-toast";
 import { useAuth } from "../context/AuthContext.jsx";
 import { authApi } from "../api/auth";
 import { getErrorMessage } from "../utils/helpers.js";
+import AuthLayout, { Em, inputClass, labelClass, eyeClass } from "../components/AuthLayout.jsx";
 
 export default function LoginPage() {
   const { login } = useAuth();
@@ -47,124 +48,94 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex bg-gray-50">
-      <div className="hidden lg:flex flex-1 flex-col justify-between p-12 bg-gradient-to-br from-primary-700 via-primary-600 to-primary-500 text-white">
-        <div className="flex items-center gap-3">
-          <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-white/15 backdrop-blur">
-            <Wallet className="w-5 h-5" />
-          </div>
-          <span className="font-bold text-lg">MoneyLog</span>
-        </div>
-        <div className="max-w-md">
-          <h1 className="text-4xl font-bold leading-tight mb-4">
-            Simple money tracking for everyday life.
-          </h1>
-          <p className="text-white/70">
-            Log expenses, organize categories and payment methods, and understand
-            where your money goes — all in one minimal dashboard.
-          </p>
-        </div>
-        <p className="text-white/50 text-sm">
-          © {new Date().getFullYear()} MoneyLog
-        </p>
-      </div>
-
-      <div className="flex-1 flex items-center justify-center p-6">
-        <div className="w-full max-w-sm">
-          <div className="flex lg:hidden items-center justify-center gap-3 mb-8">
-            <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-primary-600 text-white">
-              <Wallet className="w-5 h-5" />
-            </div>
-            <span className="font-bold text-xl">MoneyLog</span>
-          </div>
-
-          <h2 className="text-2xl font-bold mb-1">Sign in</h2>
-          <p className="text-sm text-gray-500 mb-8">
-            Welcome back, enter your details.
-          </p>
-
+    <AuthLayout
+      eyebrow="Member · Welcome back"
+      title={
+        <>
+          Welcome back to your <Em>MoneyLog.</Em>
+        </>
+      }
+      subtitle="Sign in to see where your money went — and where it's going."
+      backTo={{ to: "/", label: "Back to home" }}
+      below={
+        <>
+          New to MoneyLog?{" "}
           <Link
-            to="/"
-            className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-700 mb-4"
+            to="/register"
+            className="font-semibold text-brand-deep hover:text-brand-hover dark:text-[#8FD0B4] dark:hover:text-[#A7DCC4]"
           >
-            <ArrowLeft className="w-4 h-4" /> Back to home
+            Create your account
           </Link>
-
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="label">Email</label>
-              <input
-                type="email"
-                name="email"
-                required
-                placeholder="you@example.com"
-                className="input"
-                value={form.email}
-                onChange={(e) => setForm({ ...form, email: e.target.value })}
-              />
-            </div>
-            <div className="flex items-center justify-between">
-              <label className="label">Password</label>
-              <Link
-                to="/forgot-password"
-                className="text-sm font-medium text-primary-600 hover:text-primary-700"
-              >
-                Forgot password?
-              </Link>
-            </div>
-            <div className="relative">
-                <input
-                  type={showPassword ? "text" : "password"}
-                  name="password"
-                  required
-                  placeholder="••••••••"
-                  className="input pr-10"
-                  value={form.password}
-                  onChange={(e) => setForm({ ...form, password: e.target.value })}
-                />
-                <button
-                  type="button"
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                  onClick={() => setShowPassword((s) => !s)}
-                >
-                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                </button>
-              </div>
-            <button type="submit" disabled={submitting} className="btn-primary w-full">
-              {submitting && <Loader2 className="w-4 h-4 animate-spin" />}
-              {submitting ? "Signing in..." : "Sign in"}
-            </button>
-          </form>
-
-          {unverified && (
-            <div className="mt-4 p-4 rounded-xl bg-amber-50 border border-amber-200">
-              <div className="flex items-start gap-3">
-                <MailWarning className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
-                <div>
-                  <p className="text-sm text-amber-800">
-                    Please verify your email before logging in.
-                  </p>
-                  <button
-                    type="button"
-                    onClick={handleResend}
-                    disabled={resending}
-                    className="mt-2 text-sm font-medium text-primary-600 hover:text-primary-700 disabled:opacity-60"
-                  >
-                    {resending ? "Sending..." : "Resend verification email"}
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-
-          <p className="mt-6 text-sm text-center text-gray-500">
-            Don't have an account?{" "}
-            <Link to="/register" className="font-medium text-primary-600 hover:text-primary-700">
-              Create one
-            </Link>
-          </p>
+        </>
+      }
+    >
+      <form onSubmit={handleSubmit} className="space-y-5">
+        <div>
+          <label className={labelClass}>Email</label>
+          <input
+            type="email"
+            name="email"
+            required
+            placeholder="you@example.com"
+            className={inputClass}
+            value={form.email}
+            onChange={(e) => setForm({ ...form, email: e.target.value })}
+          />
         </div>
-      </div>
-    </div>
+        <div className="flex items-center justify-between">
+          <label className={labelClass}>Password</label>
+          <Link
+            to="/forgot-password"
+            className="text-sm font-medium text-brand-deep hover:text-brand-hover dark:text-[#8FD0B4] dark:hover:text-[#A7DCC4]"
+          >
+            Forgot password?
+          </Link>
+        </div>
+        <div className="relative">
+          <input
+            type={showPassword ? "text" : "password"}
+            name="password"
+            required
+            placeholder="••••••••"
+            className={inputClass + " pr-11"}
+            value={form.password}
+            onChange={(e) => setForm({ ...form, password: e.target.value })}
+          />
+          <button
+            type="button"
+            className={eyeClass}
+            aria-label={showPassword ? "Hide password" : "Show password"}
+            onClick={() => setShowPassword((s) => !s)}
+          >
+            {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+          </button>
+        </div>
+        <button type="submit" disabled={submitting} className="btn-landing-primary w-full !py-3">
+          {submitting && <Loader2 className="w-4 h-4 animate-spin" />}
+          {submitting ? "Signing in..." : "Sign in"}
+        </button>
+      </form>
+
+      {unverified && (
+        <div className="mt-5 p-4 rounded-xl bg-accent-sand/60 border border-borderWarm dark:bg-[#262015] dark:border-[#2A2418]">
+          <div className="flex items-start gap-3">
+            <MailWarning className="w-5 h-5 text-accent-sienna dark:text-[#E0784A] shrink-0 mt-0.5" />
+            <div>
+              <p className="text-sm text-ink dark:text-[#EDE7DA]">
+                Please verify your email before logging in.
+              </p>
+              <button
+                type="button"
+                onClick={handleResend}
+                disabled={resending}
+                className="mt-2 text-sm font-semibold text-brand-deep hover:text-brand-hover dark:text-[#8FD0B4] dark:hover:text-[#A7DCC4] disabled:opacity-60"
+              >
+                {resending ? "Sending..." : "Resend verification email"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </AuthLayout>
   );
 }
