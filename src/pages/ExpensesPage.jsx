@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Plus, Pencil, Trash2, Search, X } from "lucide-react";
 import toast from "react-hot-toast";
 import { expenseApi } from "../api/expense.js";
@@ -35,6 +36,7 @@ const EMPTY_FORM = {
 };
 
 export default function ExpensesPage() {
+  const navigate = useNavigate();
   const [expenses, setExpenses] = useState([]);
   const [pagination, setPagination] = useState({
     number: 0,
@@ -129,7 +131,7 @@ export default function ExpensesPage() {
         title="Expenses"
         subtitle="Log and track every expense"
         action={
-          <button className="btn-primary" onClick={() => setEditing("new")}>
+          <button className="btn-primary" onClick={() => navigate("/app", { state: { openWizard: true } })}>
             <Plus className="w-4 h-4" /> Add expense
           </button>
         }
@@ -192,7 +194,7 @@ export default function ExpensesPage() {
       ) : expenses.length === 0 ? (
         <div className="card p-12 text-center">
           <p className="text-sm text-gray-500 mb-4">No expenses found.</p>
-          <button className="btn-primary" onClick={() => setEditing("new")}>
+          <button className="btn-primary" onClick={() => navigate("/app", { state: { openWizard: true } })}>
             <Plus className="w-4 h-4" /> Add your first expense
           </button>
         </div>

@@ -20,7 +20,7 @@ export default function Sidebar({ open, onClose }) {
         />
       )}
       <aside
-        className={`fixed lg:sticky top-0 z-40 h-screen w-64 bg-white border-r border-gray-100 flex flex-col transition-transform duration-200 lg:translate-x-0 ${
+        className={`fixed lg:sticky top-0 z-40 h-screen w-64 bg-white border-r border-gray-100 flex flex-col transition-transform duration-200 lg:translate-x-0 dark:bg-gray-900 dark:border-gray-800 ${
           open ? "translate-x-0" : "-translate-x-full"
         }`}
       >
@@ -30,7 +30,9 @@ export default function Sidebar({ open, onClose }) {
           </div>
           <div>
             <p className="font-bold leading-tight">MoneyLog</p>
-            <p className="text-xs text-gray-400">Track your money</p>
+            <p className="text-xs text-gray-400 dark:text-gray-500">
+              Track your money
+            </p>
           </div>
         </div>
 
@@ -43,8 +45,8 @@ export default function Sidebar({ open, onClose }) {
               className={({ isActive }) =>
                 `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition ${
                   isActive
-                    ? "bg-primary-50 text-primary-700"
-                    : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                    ? "bg-primary-50 text-primary-700 dark:bg-primary-950/50 dark:text-primary-300"
+                    : "text-gray-600 hover:bg-gray-50 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-100"
                 }`
               }
             >
@@ -54,19 +56,25 @@ export default function Sidebar({ open, onClose }) {
           ))}
         </nav>
 
-        <div className="p-4 border-t border-gray-100">
-          <div className="flex items-center gap-3 mb-3 px-1">
-            <div className="flex items-center justify-center w-9 h-9 rounded-full bg-primary-100 text-primary-700 font-semibold text-sm">
+        <div className="p-4 border-t border-gray-100 dark:border-gray-800">
+          <NavLink
+            to="/app/profile"
+            onClick={onClose}
+            className="flex items-center gap-3 mb-3 px-1 py-1 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition"
+          >
+            <div className="flex items-center justify-center w-9 h-9 rounded-full bg-primary-100 text-primary-700 dark:bg-primary-950/60 dark:text-primary-300 font-semibold text-sm">
               {user?.name?.charAt(0)?.toUpperCase() || "U"}
             </div>
             <div className="min-w-0">
               <p className="text-sm font-medium truncate">{user?.name}</p>
-              <p className="text-xs text-gray-400 truncate">{user?.email}</p>
+              <p className="text-xs text-gray-400 dark:text-gray-500 truncate">
+                {user?.email}
+              </p>
             </div>
-          </div>
+          </NavLink>
           <button
             onClick={handleLogout}
-            className="flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50 transition"
+            className="flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50 transition dark:text-red-400 dark:hover:bg-red-950/40"
           >
             <LogOut className="w-5 h-5" />
             Logout

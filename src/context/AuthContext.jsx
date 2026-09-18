@@ -33,8 +33,7 @@ export function AuthProvider({ children }) {
     setLoading(true);
     try {
       const data = await authApi.register({ name, email, password });
-      saveSession(data);
-      return true;
+      return data;
     } finally {
       setLoading(false);
     }
@@ -47,8 +46,18 @@ export function AuthProvider({ children }) {
     setUser(null);
   };
 
+  const updateUser = (partial) => {
+    setUser((prev) => {
+      const next = { ...(prev || {}), ...partial };
+      localStorage.setItem("user", JSON.stringify(next));
+      return next;
+    });
+  };
+
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout }}>
+    <AuthContext.Provider
+      value={{ user, loading, login, register, logout, updateUser }}
+    >
       {children}
     </AuthContext.Provider>
   );

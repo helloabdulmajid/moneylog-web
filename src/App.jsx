@@ -5,6 +5,9 @@ import Layout from "./components/Layout.jsx";
 import LandingPage from "./pages/LandingPage.jsx";
 import LoginPage from "./pages/LoginPage.jsx";
 import RegisterPage from "./pages/RegisterPage.jsx";
+import VerifyEmailPage from "./pages/VerifyEmailPage.jsx";
+import ForgotPasswordPage from "./pages/ForgotPasswordPage.jsx";
+import ResetPasswordPage from "./pages/ResetPasswordPage.jsx";
 import DashboardPage from "./pages/DashboardPage.jsx";
 import HomePage from "./pages/HomePage.jsx";
 import ExpensesPage from "./pages/ExpensesPage.jsx";
@@ -12,6 +15,7 @@ import CategoriesPage from "./pages/CategoriesPage.jsx";
 import PaymentPage from "./pages/PaymentPage.jsx";
 import CreditCardsPage from "./pages/CreditCardsPage.jsx";
 import BillPaymentsPage from "./pages/BillPaymentsPage.jsx";
+import ProfilePage from "./pages/ProfilePage.jsx";
 
 export default function App() {
   const { user } = useAuth();
@@ -31,6 +35,9 @@ export default function App() {
         path="/register"
         element={user ? <Navigate to="/app" replace /> : <RegisterPage />}
       />
+      <Route path="/verify-email" element={<VerifyEmailPage />} />
+      <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+      <Route path="/reset-password" element={<ResetPasswordPage />} />
 
       <Route
         element={
@@ -46,6 +53,7 @@ export default function App() {
         <Route path="/credit-cards" element={<CreditCardsPage />} />
         <Route path="/bill-payments" element={<BillPaymentsPage />} />
         <Route path="/payments" element={<PaymentPage />} />
+        <Route path="/app/profile" element={<ProfilePage />} />
       </Route>
 
       <Route path="*" element={<Navigate to={user ? "/app" : "/"} replace />} />

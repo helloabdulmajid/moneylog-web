@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef } from "react";
+import { useLocation } from "react-router-dom";
 import { Plus, ChevronLeft, Loader2 } from "lucide-react";
 import toast from "react-hot-toast";
 import { expenseApi } from "../api/expense.js";
@@ -77,6 +78,7 @@ function fmtDate(d) {
 }
 
 export default function HomePage() {
+  const location = useLocation();
   const [wizardOpen, setWizardOpen] = useState(false);
   const [date, setDate] = useState(today());
   const [time, setTime] = useState(nowTime());
@@ -101,6 +103,10 @@ export default function HomePage() {
       setSources(s || []);
     });
   }, []);
+
+  useEffect(() => {
+    if (location.state?.openWizard) setWizardOpen(true);
+  }, [location.state]);
 
   const openWizard = () => {
     setWizardOpen(true);

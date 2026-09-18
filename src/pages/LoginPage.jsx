@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Wallet, Eye, EyeOff, Loader2, ArrowLeft } from "lucide-react";
+import { Wallet, Eye, EyeOff, Loader2, ArrowLeft, MailWarning } from "lucide-react";
 import toast from "react-hot-toast";
 import { useAuth } from "../context/AuthContext.jsx";
+import { authApi } from "../api/auth";
 import { getErrorMessage } from "../utils/helpers.js";
 
 export default function LoginPage() {
@@ -11,18 +12,37 @@ export default function LoginPage() {
   const [form, setForm] = useState({ email: "", password: "" });
   const [showPassword, setShowPassword] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [unverified, setUnverified] = useState(false);
+  const [resending, setResending] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSubmitting(true);
+    setUnverified(false);
     try {
       await login(form.email, form.password);
       toast.success("Welcome back!");
       navigate("/app");
     } catch (error) {
-      toast.error(getErrorMessage(error));
+      const message = getErrorMessage(error);
+      toast.error(message);
+      if (message.toLowerCase().includes("verify your email")) {
+        setUnverified(true);
+      }
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const handleResend = async () => {
+    setResending(true);
+    try {
+      const data = await authApi.resendVerification(form.email);
+      toast.success(data.message);
+    } catch (error) {
+      toast.error(getErrorMessage(error));
+    } finally {
+      setResending(false);
     }
   };
 
@@ -83,9 +103,16 @@ export default function LoginPage() {
                 onChange={(e) => setForm({ ...form, email: e.target.value })}
               />
             </div>
-            <div>
+            <div className="flex items-center justify-between">
               <label className="label">Password</label>
-              <div className="relative">
+              <Link
+                to="/forgot-password"
+                className="text-sm font-medium text-primary-600 hover:text-primary-700"
+              >
+                Forgot password?
+              </Link>
+            </div>
+            <div className="relative">
                 <input
                   type={showPassword ? "text" : "password"}
                   name="password"
@@ -103,12 +130,32 @@ export default function LoginPage() {
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
-            </div>
             <button type="submit" disabled={submitting} className="btn-primary w-full">
               {submitting && <Loader2 className="w-4 h-4 animate-spin" />}
               {submitting ? "Signing in..." : "Sign in"}
             </button>
           </form>
+
+          {unverified && (
+            <div className="mt-4 p-4 rounded-xl bg-amber-50 border border-amber-200">
+              <div className="flex items-start gap-3">
+                <MailWarning className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-sm text-amber-800">
+                    Please verify your email before logging in.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={handleResend}
+                    disabled={resending}
+                    className="mt-2 text-sm font-medium text-primary-600 hover:text-primary-700 disabled:opacity-60"
+                  >
+                    {resending ? "Sending..." : "Resend verification email"}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
 
           <p className="mt-6 text-sm text-center text-gray-500">
             Don't have an account?{" "}
