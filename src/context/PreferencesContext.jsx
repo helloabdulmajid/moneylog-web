@@ -7,7 +7,7 @@ import { configureFormatting } from "../utils/helpers";
 const PreferencesContext = createContext(null);
 
 export const DEFAULT_PREFERENCES = {
-  theme: "SYSTEM",
+  theme: "LIGHT",
   currency: "INR",
   timezone: null,
   dateFormat: "DD_MMM_YYYY",

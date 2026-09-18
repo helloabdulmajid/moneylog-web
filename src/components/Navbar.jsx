@@ -6,8 +6,9 @@ export default function Navbar({ onMenuClick }) {
       <button className="btn-icon lg:hidden" onClick={onMenuClick}>
         <Menu className="w-5 h-5" />
       </button>
-      <div className="hidden lg:block relative flex-1 max-w-md">
-        <p className="text-sm text-gray-400">
+      <div className="hidden lg:flex relative flex-1 max-w-md items-center gap-2">
+        <span className="w-1.5 h-1.5 rounded-full bg-accent-sienna" />
+        <p className="text-sm text-gray-500 font-display">
           Keep your money simple and tracked.
         </p>
       </div>
