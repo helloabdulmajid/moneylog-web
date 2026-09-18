@@ -9,7 +9,39 @@
   }
 }
 
+@layer utilities {
+  .font-display {
+    font-family: "Space Grotesk", ui-sans-serif, system-ui, -apple-system,
+      "Segoe UI", Roboto, sans-serif;
+  }
+
+  .font-ledger {
+    font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo,
+      monospace;
+  }
+
+  .font-hand {
+    font-family: "Caveat", "Comic Sans MS", cursive;
+  }
+}
+
 @layer components {
+  .btn-landing {
+    @apply inline-flex items-center justify-center gap-2 font-display text-sm font-semibold rounded-full transition duration-200 active:scale-95;
+  }
+
+  .btn-landing-primary {
+    @apply btn-landing px-6 py-3 text-white bg-brand-deep hover:bg-brand-hover;
+  }
+
+  .btn-landing-ghost {
+    @apply btn-landing px-5 py-3 text-ink bg-transparent border border-ink/15 hover:border-ink/30 hover:bg-ink/5;
+  }
+
+  .landing-chip {
+    @apply inline-flex items-center gap-1 text-xs font-medium;
+  }
+
   .card {
     @apply bg-white rounded-xl border border-gray-100 shadow-sm dark:bg-gray-900 dark:border-gray-800;
   }
@@ -204,5 +236,16 @@
   }
   .dark .text-rose-600 {
     color: #fb7185;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }
