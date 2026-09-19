@@ -89,6 +89,7 @@ export default function HomePage() {
   const [categories, setCategories] = useState([]);
   const [apps, setApps] = useState([]);
   const [sources, setSources] = useState([]);
+  const [summary, setSummary] = useState(null);
 
   useEffect(() => {
     Promise.all([
@@ -105,6 +106,20 @@ export default function HomePage() {
   }, []);
 
   useEffect(() => {
+    const now = new Date();
+    expenseApi
+      .list({ month: now.getMonth() + 1, year: now.getFullYear(), size: 100 })
+      .then((res) => {
+        const list = res?.content || [];
+        const todayStr = today();
+        setSummary({
+          monthTotal: list.reduce((sum, e) => sum + e.amount, 0),
+          todayCount: list.filter((e) => String(e.expenseDate) === todayStr).length,
+        });
+      });
+  }, []);
+
+  useEffect(() => {
     if (location.state?.openWizard) setWizardOpen(true);
   }, [location.state]);
 
@@ -114,6 +129,35 @@ export default function HomePage() {
 
   return (
     <div className="max-w-md mx-auto">
+      {!wizardOpen && summary && (
+        <div className="px-1 pt-5 pb-1 animate-fade-in">
+          <p className="text-sm font-medium text-gray-500 dark:text-[#CFC5AF]">
+            {new Date().toLocaleDateString("en", {
+              weekday: "long",
+              day: "numeric",
+              month: "long",
+            })}
+          </p>
+          <p className="mt-1 text-3xl font-bold tracking-tight tabular-nums">
+            {formatCurrency(summary.monthTotal)}
+          </p>
+          <div className="flex items-center gap-2 mt-1.5">
+            <span className="text-xs text-gray-400 dark:text-[#8A8070]">
+              spent this month
+            </span>
+            {summary.todayCount > 0 ? (
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary-50 text-primary-700 text-xs font-medium dark:bg-primary-950/50 dark:text-primary-300">
+                {summary.todayCount} added today
+              </span>
+            ) : (
+              <span className="text-xs text-gray-400 dark:text-[#8A8070]">
+                · Pull up to add today's first one
+              </span>
+            )}
+          </div>
+        </div>
+      )}
+
       <div className="flex items-center justify-between px-1 py-5">
         <button
           onClick={() => dateRef.current?.showPicker()}
@@ -145,13 +189,7 @@ export default function HomePage() {
 
       {!wizardOpen && (
         <>
-          <button
-            onClick={openWizard}
-            className="fixed bottom-6 right-6 z-30 w-14 h-14 rounded-full bg-primary-600 text-white flex items-center justify-center shadow-lg shadow-primary-200 transition hover:bg-primary-700 active:scale-95 md:hidden"
-          >
-            <Plus className="w-6 h-6" strokeWidth={2.5} />
-          </button>
-          <div className="hidden md:flex flex-col items-center justify-center pt-20 animate-fade-in">
+          <div className="hidden md:flex flex-col items-center justify-center pt-16 animate-fade-in">
             <button
               onClick={openWizard}
               className="w-16 h-16 rounded-full bg-primary-600 text-white flex items-center justify-center shadow-lg shadow-primary-200 transition hover:bg-primary-700 active:scale-95"

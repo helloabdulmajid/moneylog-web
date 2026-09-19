@@ -58,7 +58,7 @@ export default function DashboardPage() {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-8">
         <StatCard
           icon={TrendingUp}
           label="Spent this month"
@@ -170,11 +170,11 @@ export default function DashboardPage() {
 function StatCard({ icon: Icon, label, value, accent }) {
   return (
     <div className="card p-5">
-      <div className={`flex items-center justify-center w-11 h-11 rounded-xl mb-4 ${accent}`}>
+      <div className={`flex items-center justify-center w-10 h-10 sm:w-11 sm:h-11 rounded-xl mb-3 ${accent}`}>
         <Icon className="w-5 h-5" />
       </div>
-      <p className="text-2xl font-bold tracking-tight">{value}</p>
-      <p className="mt-1 text-sm text-gray-500">{label}</p>
+      <p className="text-xl sm:text-2xl font-bold tracking-tight truncate">{value}</p>
+      <p className="mt-1 text-xs sm:text-sm text-gray-500 truncate">{label}</p>
     </div>
   );
 }

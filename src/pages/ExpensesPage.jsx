@@ -200,7 +200,52 @@ export default function ExpensesPage() {
         </div>
       ) : (
         <div className="card overflow-hidden">
-          <div className="overflow-x-auto">
+          <ul className="md:hidden divide-y divide-gray-50">
+            {expenses.map((expense) => (
+              <li key={expense.id} className="px-4 py-3">
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-gray-50 text-lg shrink-0">
+                    {expense.category?.icon || "💸"}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium truncate">
+                      {expense.category?.name || expense.purpose || "Expense"}
+                    </p>
+                    <p className="text-xs text-gray-400 truncate">
+                      {expense.subcategory?.name}
+                      {expense.notes ? ` • ${expense.notes}` : ""}
+                    </p>
+                  </div>
+                  <p className="font-semibold text-rose-600 whitespace-nowrap">
+                    − {formatCurrency(expense.amount)}
+                  </p>
+                </div>
+                <div className="flex items-center justify-between pl-[52px] mt-1.5">
+                  <p className="text-xs text-gray-400">
+                    {formatDate(expense.expenseDate)}
+                  </p>
+                  <div className="flex items-center gap-1">
+                    <button
+                      onClick={() => setEditing(expense)}
+                      aria-label="Edit expense"
+                      className="flex items-center justify-center w-11 h-11 text-gray-500 rounded-lg transition hover:bg-gray-100 hover:text-gray-700 active:scale-95 dark:text-[#8A8070] dark:hover:bg-[#2A2418] dark:hover:text-[#E6DFCE]"
+                    >
+                      <Pencil className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => setDeleting(expense)}
+                      aria-label="Delete expense"
+                      className="flex items-center justify-center w-11 h-11 text-gray-500 rounded-lg transition hover:bg-red-50 hover:text-red-600 active:scale-95 dark:text-[#8A8070] dark:hover:bg-[#3E1210]/40 dark:hover:text-[#F87171]"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              </li>
+            ))}
+          </ul>
+
+          <div className="overflow-x-auto hidden md:block">
             <table className="w-full text-sm">
               <thead>
                 <tr className="text-left text-xs uppercase tracking-wide text-gray-400 border-b border-gray-100">
