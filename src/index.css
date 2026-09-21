@@ -8,17 +8,20 @@
       "Segoe UI", Roboto, sans-serif;
   }
 
-  /* Sidebar palette: lilac #6E6D8E (same in light and dark modes). */
+  /* ================================================================
+     MoneyLog sidebar palette
+     Matches landing page / sign-in design
+     ================================================================ */
   :root {
-    --sb: #6e6d8e;
-    --sb-hi: #fffdf6;
-    --sb-lo: rgba(226, 228, 244, 0.85);
-    --sb-hover: rgba(255, 255, 255, 0.1);
+    --sb: #1e4637;
+    --sb-hi: #f6f1e6;
+    --sb-lo: #c3d8cb;
+    --sb-hover: rgba(255, 253, 246, 0.08);
     --sb-active-bg: #fffdf6;
-    --sb-active-fg: #454674;
-    --sb-bubble-bg: rgba(255, 255, 255, 0.16);
-    --sb-logout: #e9a87e;
-    --sb-divider: rgba(255, 255, 255, 0.12);
+    --sb-active-fg: #1e4637;
+    --sb-bubble-bg: rgba(255, 253, 246, 0.12);
+    --sb-logout: #e0784a;
+    --sb-divider: rgba(255, 253, 246, 0.12);
   }
 }
 
@@ -105,32 +108,37 @@
 }
 
 /* =====================================================================
-   Chai Ledger palette overrides (visitor + app).
-   The app pages use Tailwind neutrals (gray) and `primary` (indigo);
-   these blocks remap them to the warm "Chai Ledger" identity for BOTH
-   light and dark modes, so existing markup needs no per-page changes.
-   Dark selectors win on same specificity via the `.dark` ancestor.
+   MoneyLog palette overrides
+   Visitor + app
    ===================================================================== */
+
 @layer utilities {
   /* ---------- LIGHT: neutral palette ---------- */
+
   .bg-white {
     background-color: #fffdf6;
   }
+
   .bg-white\/80 {
     background-color: rgba(255, 253, 246, 0.8);
   }
+
   .bg-gray-50 {
     background-color: #f6f1e6;
   }
+
   .bg-gray-50\/60 {
     background-color: rgba(246, 241, 230, 0.6);
   }
+
   .bg-gray-50\/80 {
     background-color: rgba(246, 241, 230, 0.8);
   }
+
   .bg-gray-100 {
     background-color: #efe7d8;
   }
+
   .bg-gray-200 {
     background-color: #e7e0d0;
   }
@@ -138,21 +146,27 @@
   .text-gray-900 {
     color: #211b11;
   }
+
   .text-gray-800 {
     color: #2b2418;
   }
+
   .text-gray-700 {
     color: #3a3120;
   }
+
   .text-gray-600 {
     color: #4c4331;
   }
+
   .text-gray-500 {
     color: #6e675a;
   }
+
   .text-gray-400 {
     color: #87806f;
   }
+
   .text-gray-300 {
     color: #a29a88;
   }
@@ -160,12 +174,15 @@
   .border-gray-100 {
     border-color: #efe7d8;
   }
+
   .border-gray-200 {
     border-color: #e7e0d0;
   }
+
   .border-gray-300 {
     border-color: #d9d0bb;
   }
+
   .border-gray-400 {
     border-color: #c6bca3;
   }
@@ -180,51 +197,66 @@
   .hover\:bg-gray-100:hover {
     background-color: #efe7d8;
   }
+
   .hover\:bg-gray-200:hover {
     background-color: #ded5c2;
   }
+
   .hover\:text-gray-900:hover,
   .hover\:text-gray-700:hover {
     color: #211b11;
   }
+
   .hover\:text-gray-600:hover {
     color: #3a3120;
   }
+
   .hover\:border-gray-300:hover {
     border-color: #c6bca3;
   }
+
   .hover\:border-gray-200:hover {
     border-color: #d9d0bb;
   }
+
   .hover\:bg-white:hover {
     background-color: #fffdf6;
   }
 
-  /* ---------- LIGHT: primary (forest / mint / sienna) ---------- */
+  /* ---------- LIGHT: primary ---------- */
+
   .bg-primary-50 {
     background-color: #e2ece3;
   }
+
   .bg-primary-50\/50 {
     background-color: rgba(226, 236, 227, 0.5);
   }
+
   .bg-primary-100 {
     background-color: #d3e5d8;
   }
+
   .bg-primary-200 {
     background-color: #c6dccb;
   }
+
   .bg-primary-500 {
     background-color: #2e6b55;
   }
+
   .bg-primary-600 {
     background-color: #1e4637;
   }
+
   .bg-primary-700 {
     background-color: #173b2e;
   }
+
   .bg-primary-800 {
     background-color: #132e24;
   }
+
   .bg-primary-900 {
     background-color: #0e2b1f;
   }
@@ -232,15 +264,19 @@
   .text-primary-300 {
     color: #4e8d75;
   }
+
   .text-primary-500 {
     color: #2e6b55;
   }
+
   .text-primary-600 {
     color: #1e4637;
   }
+
   .text-primary-700 {
     color: #173b2e;
   }
+
   .text-primary-900,
   .text-primary-950 {
     color: #0a211a;
@@ -249,9 +285,11 @@
   .border-primary-100 {
     border-color: #c6dccb;
   }
+
   .border-primary-200 {
     border-color: #9cc3ad;
   }
+
   .border-primary-300 {
     border-color: #7faf95;
   }
@@ -259,9 +297,11 @@
   .ring-primary-100 {
     --tw-ring-color: #dfe9e0;
   }
+
   .focus\:ring-primary-100:focus {
     --tw-ring-color: #dfe9e0;
   }
+
   .focus\:border-primary-500:focus {
     border-color: #2e6b55;
   }
@@ -269,9 +309,11 @@
   .hover\:bg-primary-600:hover {
     background-color: #173b2e;
   }
+
   .hover\:bg-primary-700:hover {
     background-color: #132e24;
   }
+
   .hover\:text-primary-700:hover {
     color: #1e4637;
   }
@@ -280,25 +322,32 @@
     accent-color: #1e4637;
   }
 
-  /* ---------- DARK: neutral palette (warm ink) ---------- */
+  /* ---------- DARK: neutral palette ---------- */
+
   .dark .bg-white {
     background-color: #1c1711;
   }
+
   .dark .bg-white\/80 {
     background-color: rgba(28, 23, 17, 0.8);
   }
+
   .dark .bg-gray-50 {
     background-color: #14110c;
   }
+
   .dark .bg-gray-50\/60 {
     background-color: rgba(20, 17, 12, 0.6);
   }
+
   .dark .bg-gray-50\/80 {
     background-color: rgba(20, 17, 12, 0.8);
   }
+
   .dark .bg-gray-100 {
     background-color: #1c1711;
   }
+
   .dark .bg-gray-200 {
     background-color: #2a2418;
   }
@@ -306,18 +355,23 @@
   .dark .text-gray-900 {
     color: #ede7da;
   }
+
   .dark .text-gray-800 {
     color: #e6dfce;
   }
+
   .dark .text-gray-700 {
     color: #dfd7c4;
   }
+
   .dark .text-gray-600 {
     color: #cfc5af;
   }
+
   .dark .text-gray-500 {
     color: #9a907c;
   }
+
   .dark .text-gray-400 {
     color: #8a8070;
   }
@@ -325,9 +379,11 @@
   .dark .border-gray-100 {
     border-color: #1c1711;
   }
+
   .dark .border-gray-200 {
     border-color: #2a2418;
   }
+
   .dark .border-gray-300 {
     border-color: #3a3226;
   }
@@ -342,41 +398,52 @@
   .dark .hover\:bg-gray-100:hover {
     background-color: #1c1711;
   }
+
   .dark .hover\:bg-gray-200:hover {
     background-color: #2a2418;
   }
+
   .dark .hover\:text-gray-900:hover,
   .dark .hover\:text-gray-700:hover {
     color: #ede7da;
   }
+
   .dark .hover\:text-gray-600:hover {
     color: #cfc5af;
   }
+
   .dark .hover\:border-gray-300:hover {
     border-color: #3a3226;
   }
+
   .dark .hover\:bg-white:hover {
     background-color: #1c1711;
   }
 
-  /* ---------- DARK: primary (forest / mint) ---------- */
+  /* ---------- DARK: primary ---------- */
+
   .dark .bg-primary-50 {
     background-color: rgba(30, 70, 55, 0.35);
   }
+
   .dark .bg-primary-50\/50 {
     background-color: rgba(30, 70, 55, 0.18);
   }
+
   .dark .bg-primary-100 {
     background-color: rgba(30, 70, 55, 0.45);
   }
+
   .dark .bg-primary-200 {
     background-color: rgba(30, 70, 55, 0.6);
   }
+
   .dark .bg-primary-500,
   .dark .bg-primary-600,
   .dark .bg-primary-700 {
     background-color: #1e4637;
   }
+
   .dark .bg-primary-800,
   .dark .bg-primary-900 {
     background-color: #132e24;
@@ -385,12 +452,15 @@
   .dark .text-primary-700 {
     color: #8fd0b4;
   }
+
   .dark .text-primary-600 {
     color: #7cc4a4;
   }
+
   .dark .text-primary-500 {
     color: #9cc3ad;
   }
+
   .dark .text-primary-300 {
     color: #9cc3ad;
   }
@@ -398,12 +468,15 @@
   .dark .border-primary-100 {
     border-color: #2e6b55;
   }
+
   .dark .border-primary-200 {
     border-color: #3e7a63;
   }
+
   .dark .border-primary-300 {
     border-color: #4e8d75;
   }
+
   .dark .ring-primary-100 {
     --tw-ring-color: #2e6b55;
   }
@@ -411,26 +484,33 @@
   .dark .hover\:bg-primary-600:hover {
     background-color: #173b2e;
   }
+
   .dark .hover\:bg-primary-700:hover {
     background-color: #132e24;
   }
 
-  /* ---------- semantic accents (warm) ---------- */
+  /* ---------- semantic accents ---------- */
+
   .dark .bg-red-50 {
     background-color: rgba(62, 18, 16, 0.35);
   }
+
   .dark .bg-red-100 {
     background-color: rgba(62, 18, 16, 0.55);
   }
+
   .dark .border-red-200 {
     border-color: #52231c;
   }
+
   .dark .text-red-700 {
     color: #fca5a5;
   }
+
   .dark .text-red-600 {
     color: #f87171;
   }
+
   .dark .text-red-500 {
     color: #f87171;
   }
@@ -438,106 +518,138 @@
   .dark .bg-emerald-50 {
     background-color: rgba(2, 44, 34, 0.4);
   }
+
   .dark .text-emerald-600 {
     color: #34d399;
   }
+
   .dark .bg-amber-50 {
     background-color: rgba(69, 26, 3, 0.4);
   }
+
   .dark .text-amber-600 {
     color: #fbbf24;
   }
+
   .dark .bg-indigo-50 {
     background-color: rgba(30, 27, 75, 0.4);
   }
+
   .dark .text-indigo-600 {
     color: #818cf8;
   }
+
   .dark .bg-rose-50 {
     background-color: rgba(76, 5, 25, 0.4);
   }
+
   .dark .text-rose-600 {
     color: #fb7185;
   }
 
-  /* ---------- dark-variant utilities (emitted as `.dark\:x:is(.dark *)`) ---------- */
+  /* ---------- dark variant utilities ---------- */
+
   html.dark .dark\:bg-gray-950:is(.dark *) {
     background-color: #14110c;
   }
+
   html.dark .dark\:bg-gray-900:is(.dark *) {
     background-color: #1c1711;
   }
+
   html.dark .dark\:bg-gray-800:is(.dark *) {
     background-color: #2a2418;
   }
+
   html.dark .dark\:bg-gray-700:is(.dark *) {
     background-color: #3a3226;
   }
+
   html.dark .dark\:border-gray-800:is(.dark *) {
     border-color: #2a2418;
   }
+
   html.dark .dark\:border-gray-700:is(.dark *) {
     border-color: #3a3226;
   }
+
   html.dark .dark\:border-gray-600:is(.dark *) {
     border-color: #4a4233;
   }
+
   html.dark .dark\:text-gray-100:is(.dark *) {
     color: #f5f1e8;
   }
+
   html.dark .dark\:text-gray-200:is(.dark *) {
     color: #e6dfce;
   }
+
   html.dark .dark\:text-gray-300:is(.dark *) {
     color: #cfc5af;
   }
+
   html.dark .dark\:text-gray-400:is(.dark *) {
     color: #8a8070;
   }
+
   html.dark .dark\:text-gray-500:is(.dark *) {
     color: #9a907c;
   }
+
   html.dark .dark\:text-primary-300:is(.dark *) {
     color: #9cc3ad;
   }
+
   html.dark .dark\:text-primary-400:is(.dark *) {
     color: #8fd0b4;
   }
+
   html.dark .dark\:border-primary-700:is(.dark *) {
     border-color: #3e7a63;
   }
+
   html.dark .dark\:bg-primary-950\/50:is(.dark *) {
     background-color: rgba(10, 33, 26, 0.5);
   }
+
   html.dark .dark\:bg-primary-950\/60:is(.dark *) {
     background-color: rgba(10, 33, 26, 0.6);
   }
+
   html.dark .dark\:text-red-400:is(.dark *) {
     color: #f87171;
   }
+
   html.dark .dark\:text-red-300:is(.dark *) {
     color: #fca5a5;
   }
+
   html.dark .dark\:border-red-900\/60:is(.dark *) {
     border-color: rgba(65, 20, 15, 0.6);
   }
+
   html.dark .dark\:bg-red-950\/20:is(.dark *) {
     background-color: rgba(62, 18, 16, 0.2);
   }
+
   html.dark .dark\:bg-red-950\/40:is(.dark *) {
     background-color: rgba(62, 18, 16, 0.4);
   }
+
   html.dark .dark\:bg-red-950\/50:is(.dark *) {
     background-color: rgba(62, 18, 16, 0.5);
   }
+
   html.dark .dark\:hover\:bg-gray-800:hover:is(.dark *) {
     background-color: #2a2418;
   }
+
   html.dark .dark\:hover\:text-gray-200:hover:is(.dark *) {
     color: #e6dfce;
   }
 
-  /* sienna accents stay sienna in both modes */
+  /* Sienna accents stay sienna in both modes */
   .bg-brand-orange,
   .text-brand-orange,
   .bg-\[var\(--sienna\)\],
