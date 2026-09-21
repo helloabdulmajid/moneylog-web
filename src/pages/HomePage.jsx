@@ -192,7 +192,7 @@ export default function HomePage() {
           <div className="hidden md:flex flex-col items-center justify-center pt-16 animate-fade-in">
             <button
               onClick={openWizard}
-              className="w-16 h-16 rounded-full bg-primary-600 text-white flex items-center justify-center shadow-lg shadow-primary-200 transition hover:bg-primary-700 active:scale-95"
+             className="w-16 h-16 rounded-full bg-brand-deep text-paper-card flex items-center justify-center shadow-lg shadow-brand-pine/20 transition hover:bg-brand-pine active:scale-95"
             >
               <Plus className="w-7 h-7" strokeWidth={2.5} />
             </button>

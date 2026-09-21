@@ -127,6 +127,11 @@ export default function ExpensesPage() {
 
   return (
     <div>
+      <div className="mb-1">
+        <p className="font-ledger text-[11px] uppercase tracking-[0.15em] text-accent-sienna mb-1">
+          Your ledger
+        </p>
+      </div>
       <PageHeader
         title="Expenses"
         subtitle="Log and track every expense"
@@ -139,7 +144,7 @@ export default function ExpensesPage() {
 
       <div className="card p-4 mb-6 flex flex-col md:flex-row gap-3">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-muted" />
           <input
             className="input pl-10"
             placeholder="Search notes or purpose..."
@@ -193,49 +198,49 @@ export default function ExpensesPage() {
         <Loading />
       ) : expenses.length === 0 ? (
         <div className="card p-12 text-center">
-          <p className="text-sm text-gray-500 mb-4">No expenses found.</p>
+          <p className="text-sm text-ink-muted mb-4">No expenses found.</p>
           <button className="btn-primary" onClick={() => navigate("/app", { state: { openWizard: true } })}>
             <Plus className="w-4 h-4" /> Add your first expense
           </button>
         </div>
       ) : (
         <div className="card overflow-hidden">
-          <ul className="md:hidden divide-y divide-gray-50">
+          <ul className="md:hidden divide-y divide-borderWarm">
             {expenses.map((expense) => (
               <li key={expense.id} className="px-4 py-3">
                 <div className="flex items-center gap-3">
-                  <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-gray-50 text-lg shrink-0">
+                  <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-paper text-lg shrink-0">
                     {expense.category?.icon || "💸"}
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="font-medium truncate">
                       {expense.category?.name || expense.purpose || "Expense"}
                     </p>
-                    <p className="text-xs text-gray-400 truncate">
+                    <p className="text-xs text-ink-muted truncate">
                       {expense.subcategory?.name}
                       {expense.notes ? ` • ${expense.notes}` : ""}
                     </p>
                   </div>
-                  <p className="font-semibold text-rose-600 whitespace-nowrap">
+                  <p className="font-semibold text-accent-sienna whitespace-nowrap">
                     − {formatCurrency(expense.amount)}
                   </p>
                 </div>
                 <div className="flex items-center justify-between pl-[52px] mt-1.5">
-                  <p className="text-xs text-gray-400">
+                  <p className="text-xs text-ink-muted">
                     {formatDate(expense.expenseDate)}
                   </p>
                   <div className="flex items-center gap-1">
                     <button
                       onClick={() => setEditing(expense)}
                       aria-label="Edit expense"
-                      className="flex items-center justify-center w-11 h-11 text-gray-500 rounded-lg transition hover:bg-gray-100 hover:text-gray-700 active:scale-95 dark:text-[#8A8070] dark:hover:bg-[#2A2418] dark:hover:text-[#E6DFCE]"
+                      className="flex items-center justify-center w-11 h-11 text-ink-muted rounded-lg transition hover:bg-brand-mint hover:text-brand-pine active:scale-95"
                     >
                       <Pencil className="w-4 h-4" />
                     </button>
                     <button
                       onClick={() => setDeleting(expense)}
                       aria-label="Delete expense"
-                      className="flex items-center justify-center w-11 h-11 text-gray-500 rounded-lg transition hover:bg-red-50 hover:text-red-600 active:scale-95 dark:text-[#8A8070] dark:hover:bg-[#3E1210]/40 dark:hover:text-[#F87171]"
+                      className="flex items-center justify-center w-11 h-11 text-ink-muted rounded-lg transition hover:bg-accent-rose hover:text-accent-sienna active:scale-95"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
@@ -248,7 +253,7 @@ export default function ExpensesPage() {
           <div className="overflow-x-auto hidden md:block">
             <table className="w-full text-sm">
               <thead>
-                <tr className="text-left text-xs uppercase tracking-wide text-gray-400 border-b border-gray-100">
+                <tr className="text-left text-xs uppercase tracking-wide text-ink-muted border-b border-borderWarm">
                   <th className="px-4 py-3 font-medium">Expense</th>
                   <th className="px-4 py-3 font-medium hidden sm:table-cell">Date</th>
                   <th className="px-4 py-3 font-medium hidden md:table-cell">Payment</th>
@@ -256,34 +261,34 @@ export default function ExpensesPage() {
                   <th className="px-4 py-3 font-medium text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-50">
+              <tbody className="divide-y divide-borderWarm">
                 {expenses.map((expense) => (
-                  <tr key={expense.id} className="hover:bg-gray-50/60 transition">
+                  <tr key={expense.id} className="hover:bg-brand-mint/20 transition">
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
-                        <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-gray-50 text-lg shrink-0">
+                        <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-paper text-lg shrink-0">
                           {expense.category?.icon || "💸"}
                         </div>
                         <div className="min-w-0">
                           <p className="font-medium truncate">
                             {expense.category?.name || expense.purpose || "Expense"}
                           </p>
-                          <p className="text-xs text-gray-400 truncate">
+                          <p className="text-xs text-ink-muted truncate">
                             {expense.subcategory?.name}
                             {expense.notes ? ` • ${expense.notes}` : ""}
                           </p>
                         </div>
                       </div>
                     </td>
-                    <td className="px-4 py-3 text-gray-500 hidden sm:table-cell whitespace-nowrap">
+                    <td className="px-4 py-3 text-ink-muted hidden sm:table-cell whitespace-nowrap">
                       {formatDate(expense.expenseDate)}
                     </td>
                     <td className="px-4 py-3 hidden md:table-cell">
                       {expense.paymentSource?.name || (
-                        <span className="text-gray-300">—</span>
+                        <span className="text-ink-muted">—</span>
                       )}
                     </td>
-                    <td className="px-4 py-3 text-right font-semibold text-rose-600 whitespace-nowrap">
+                    <td className="px-4 py-3 text-right font-semibold text-accent-sienna whitespace-nowrap">
                       − {formatCurrency(expense.amount)}
                     </td>
                     <td className="px-4 py-3 text-right whitespace-nowrap">
@@ -295,7 +300,7 @@ export default function ExpensesPage() {
                         <Pencil className="w-4 h-4" />
                       </button>
                       <button
-                        className="btn-icon hover:text-red-600"
+                        className="btn-icon text-ink-muted hover:text-accent-sienna hover:bg-accent-rose"
                         onClick={() => setDeleting(expense)}
                         title="Delete"
                       >
@@ -309,8 +314,8 @@ export default function ExpensesPage() {
           </div>
 
           {pagination.totalPages > 1 && (
-            <div className="flex items-center justify-between px-4 py-3 border-t border-gray-100">
-              <p className="text-xs text-gray-400">
+            <div className="flex items-center justify-between px-4 py-3 border-t border-borderWarm">
+              <p className="text-xs text-ink-muted">
                 Showing {expenses.length} of {pagination.totalElements}
               </p>
               <div className="flex gap-2">
@@ -354,7 +359,7 @@ export default function ExpensesPage() {
         onClose={() => setDeleting(null)}
         title="Delete expense"
       >
-        <p className="text-sm text-gray-600 mb-6">
+        <p className="text-sm text-ink-muted mb-6">
           Are you sure you want to delete this expense of{" "}
           <span className="font-semibold">
             {deleting ? formatCurrency(deleting.amount) : ""}
@@ -581,13 +586,13 @@ function ExpenseFormModal({ expense, categories, apps, sources, onClose, onSaved
         </div>
 
         <div className="flex items-center gap-3">
-          <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer select-none">
+          <label className="flex items-center gap-2 text-sm text-ink-muted cursor-pointer select-none">
             <input
               type="checkbox"
               name="isSplit"
               checked={form.isSplit}
               onChange={handleChange}
-              className="w-4 h-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+              className="w-4 h-4 rounded border-borderWarm text-brand-deep focus:ring-brand-pine"
             />
             Split expense
           </label>
