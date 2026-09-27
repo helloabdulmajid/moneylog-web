@@ -5,6 +5,7 @@ export const PAYMENT_METHODS = [
   "BANK_TRANSFER",
   "IMPS",
   "NEFT",
+  "PAY_LATER",
   "OTHER",
 ];
 
@@ -14,6 +15,7 @@ export const PAYMENT_SOURCE_TYPES = [
   "BANK_ACCOUNT",
   "CREDIT_CARD",
   "WALLET",
+  "PAY_LATER",
   "CASH",
 ];
 
@@ -27,6 +29,7 @@ export const PAY_CHANNEL_SUGGESTIONS = [
   "Paytm",
   "Bank App",
   "Card Issuer App",
+  "OTHER",
 ];
 
 export const CATEGORY_COLORS = [

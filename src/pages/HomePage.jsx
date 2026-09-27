@@ -1,12 +1,13 @@
 import { useEffect, useState, useRef } from "react";
 import { useLocation } from "react-router-dom";
-import { Plus, ChevronLeft, Loader2 } from "lucide-react";
+import { Plus, ChevronLeft, Loader2, Eye, EyeOff } from "lucide-react";
 import toast from "react-hot-toast";
 import { expenseApi } from "../api/expense.js";
 import { categoryApi } from "../api/category.js";
 import { paymentApi } from "../api/payment.js";
 import { formatCurrency, getErrorMessage } from "../utils/helpers.js";
 import { PAYMENT_METHODS } from "../utils/constants.js";
+import { useWizardStatus } from "../context/WizardStatusContext.jsx";
 
 const METHODS_UI = [
   { value: "UPI", label: "UPI", icon: "💳" },
@@ -57,6 +58,32 @@ function sortByFrequent(items, frequentIds, getId) {
   );
 }
 
+function evaluateExpr(input) {
+  if (!input) return null;
+  const tokens = input.match(/(\d+(?:\.\d+)?|[+\-×÷])/g);
+  if (!tokens || /^[+\-×÷]$/.test(tokens[0])) return null;
+  const stack = [];
+  let op = null;
+  for (const t of tokens) {
+    if (/^[+\-×÷]$/.test(t)) {
+      if (op !== null) return null;
+      op = t;
+    } else {
+      const n = parseFloat(t);
+      if (Number.isNaN(n)) return null;
+      if (op === null) stack.push(n);
+      else if (op === "×") stack[stack.length - 1] *= n;
+      else if (op === "÷") {
+        if (n === 0) return null;
+        stack[stack.length - 1] /= n;
+      } else stack.push(op === "+" ? n : -n);
+      op = null;
+    }
+  }
+  if (op !== null) return null;
+  return stack.reduce((a, b) => a + b, 0);
+}
+
 function buildFlow(method) {
   const f = ["amount", "method"];
   if (method !== "CASH") f.push("app");
@@ -79,6 +106,7 @@ function fmtDate(d) {
 
 export default function HomePage() {
   const location = useLocation();
+  const { setWizardActive } = useWizardStatus();
   const [wizardOpen, setWizardOpen] = useState(false);
   const [date, setDate] = useState(today());
   const [time, setTime] = useState(nowTime());
@@ -90,6 +118,13 @@ export default function HomePage() {
   const [apps, setApps] = useState([]);
   const [sources, setSources] = useState([]);
   const [summary, setSummary] = useState(null);
+  const [amountHidden, setAmountHidden] = useState(() => {
+    try {
+      return localStorage.getItem("moneylog.amountHidden") === "1";
+    } catch {
+      return false;
+    }
+  });
 
   useEffect(() => {
     Promise.all([
@@ -123,8 +158,32 @@ export default function HomePage() {
     if (location.state?.openWizard) setWizardOpen(true);
   }, [location.state]);
 
+  useEffect(() => {
+    setWizardActive(wizardOpen);
+  }, [wizardOpen, setWizardActive]);
+
+  useEffect(() => {
+    const freshLoad = location.key === "default";
+    const standalone =
+      (window.matchMedia?.("(display-mode: standalone)").matches || false) ||
+      window.navigator.standalone === true;
+    const smallScreen = window.innerWidth < 768;
+    if (freshLoad && (standalone || smallScreen)) setWizardOpen(true);
+    return () => setWizardActive(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const openWizard = () => {
     setWizardOpen(true);
+  };
+
+  const toggleAmountHidden = () => {
+    setAmountHidden((hidden) => {
+      try {
+        localStorage.setItem("moneylog.amountHidden", hidden ? "0" : "1");
+      } catch {}
+      return !hidden;
+    });
   };
 
   return (
@@ -138,9 +197,18 @@ export default function HomePage() {
               month: "long",
             })}
           </p>
-          <p className="mt-1 text-3xl font-bold tracking-tight tabular-nums">
-            {formatCurrency(summary.monthTotal)}
-          </p>
+          <div className="flex items-center gap-2 mt-1">
+            <p className="text-3xl font-bold tracking-tight tabular-nums">
+              {amountHidden ? "₹ ••••" : formatCurrency(summary.monthTotal)}
+            </p>
+            <button
+              onClick={toggleAmountHidden}
+              aria-label={amountHidden ? "Show amount" : "Hide amount"}
+              className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-[#2A2418] transition"
+            >
+              {amountHidden ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+            </button>
+          </div>
           <div className="flex items-center gap-2 mt-1.5">
             <span className="text-xs text-gray-400 dark:text-[#8A8070]">
               spent this month
@@ -228,6 +296,7 @@ export default function HomePage() {
 function Wizard({ date, time, hints, categories, apps, sources, onCategoriesUpdate, onAppsUpdate, onSourcesUpdate, onDone, onBack }) {
   const [stepIdx, setStepIdx] = useState(0);
   const [submitting, setSubmitting] = useState(false);
+  const [amountCalcMode, setAmountCalcMode] = useState(false);
   const [form, setForm] = useState(() => {
     const pref = hints?.lastUsed || {};
     return {
@@ -259,6 +328,10 @@ function Wizard({ date, time, hints, categories, apps, sources, onCategoriesUpda
     setStepIdx((i) => Math.min(i, flow.length - 1));
   }, [flow.length]);
 
+  useEffect(() => {
+    if (currentStep !== "amount") setAmountCalcMode(false);
+  }, [currentStep]);
+
   const save = async () => {
     if (!form.amount || Number(form.amount) <= 0) return;
     setSubmitting(true);
@@ -285,13 +358,15 @@ function Wizard({ date, time, hints, categories, apps, sources, onCategoriesUpda
     }
   };
 
+  const stepBack = () => setStepIdx((i) => Math.max(0, i - 1));
+
   return (
-    <div className="animate-slide-up pb-6">
+    <div className="animate-slide-up flex flex-col h-[calc(100dvh-10.25rem)] md:h-auto md:block md:pb-6">
       {currentStep !== "amount" && (
         <div className="flex items-center gap-2 mb-4 flex-wrap">
           <button
-            onClick={() => setStepIdx((i) => Math.max(0, i - 1))}
-            className="text-gray-400 hover:text-gray-700"
+            onClick={stepBack}
+            className="text-gray-400 hover:text-gray-700 p-3 -ml-3 rounded-xl hover:bg-gray-100/60 flex items-center md:p-0 md:-ml-0 md:rounded-none md:hover:bg-transparent"
           >
             <ChevronLeft className="w-5 h-5" />
           </button>
@@ -307,12 +382,14 @@ function Wizard({ date, time, hints, categories, apps, sources, onCategoriesUpda
         </div>
       )}
 
-      <div className="min-h-[320px]">
+      <div className="min-h-[280px] flex-1 overflow-y-auto overscroll-contain flex flex-col md:min-h-[320px] md:block md:overflow-visible">
         {currentStep === "amount" && (
           <NumpadStep
             value={form.amount}
             onChange={(v) => set("amount", v)}
             onNext={() => { if (form.amount) goNext(); }}
+            calcMode={amountCalcMode}
+            onCalcModeChange={setAmountCalcMode}
           />
         )}
         {currentStep === "method" && (
@@ -415,12 +492,92 @@ function Wizard({ date, time, hints, categories, apps, sources, onCategoriesUpda
           />
         )}
       </div>
+
+      <MobileActionBar
+        stepIdx={stepIdx}
+        currentStep={currentStep}
+        form={form}
+        goNext={goNext}
+        stepBack={stepBack}
+        save={save}
+        submitting={submitting}
+        calcMode={amountCalcMode}
+      />
     </div>
   );
 }
 
-function NumpadStep({ value, onChange, onNext }) {
+function MobileActionBar({ stepIdx, currentStep, form, goNext, stepBack, save, submitting, calcMode }) {
+  let primary = null;
+  if (currentStep === "amount") {
+    primary = calcMode ? (
+      <span className="flex-1 text-center text-xs text-gray-400 dark:text-[#8A8070] select-none">
+        Use this amount to continue
+      </span>
+    ) : (
+      <button onClick={goNext} disabled={!form.amount} className="btn-primary flex-1 !py-3.5">
+        Next
+      </button>
+    );
+  } else if (currentStep === "subcategory") {
+    primary = (
+      <button onClick={goNext} className="btn-primary flex-1 !py-3.5">
+        Skip
+      </button>
+    );
+  } else if (currentStep === "note") {
+    primary = (
+      <>
+        <button onClick={goNext} className="btn-secondary !py-3.5">
+          Skip
+        </button>
+        <button onClick={goNext} className="btn-primary flex-1 !py-3.5">
+          Continue
+        </button>
+      </>
+    );
+  } else if (currentStep === "split") {
+    primary = (
+      <button
+        onClick={save}
+        disabled={submitting || !form.amount || Number(form.amount) <= 0}
+        className="btn-primary flex-1 !py-3.5"
+      >
+        {submitting ? (
+          <Loader2 className="w-4 h-4 animate-spin" />
+        ) : (
+          `Save${form.amount ? ` -₹${Number(form.amount).toLocaleString("en-IN")}` : ""}`
+        )}
+      </button>
+    );
+  } else {
+    primary = (
+      <span className="flex-1 text-center text-xs text-gray-400 dark:text-[#8A8070] select-none">
+        {currentStep === "category"
+          ? "Pick a category to continue"
+          : "Choose an option to continue"}
+      </span>
+    );
+  }
+
+  return (
+    <div className="md:hidden pt-3 mt-4 border-t border-gray-100 dark:border-[#2A2418] pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+      <div className="flex items-center gap-3 min-h-[52px]">
+        {stepIdx > 0 && (
+          <button onClick={stepBack} className="btn-secondary !py-3.5">
+            <ChevronLeft className="w-4 h-4" /> Back
+          </button>
+        )}
+        {primary}
+      </div>
+    </div>
+  );
+}
+
+function NumpadStep({ value, onChange, onNext, calcMode, onCalcModeChange }) {
   const digits = ["1", "2", "3", "4", "5", "6", "7", "8", "9", ".", "0", "⌫"];
+  const [expr, setExpr] = useState("");
+  const [calcResult, setCalcResult] = useState("");
 
   const handleKey = (d) => {
     if (d === "⌫") {
@@ -435,35 +592,145 @@ function NumpadStep({ value, onChange, onNext }) {
     onChange(value + d);
   };
 
+  const clearCalc = () => {
+    setExpr("");
+    setCalcResult("");
+  };
+  const backspaceCalc = () => {
+    setExpr((e) => e.slice(0, -1));
+    setCalcResult("");
+  };
+  const calcDigit = (d) => {
+    setExpr((e) => e + d);
+    setCalcResult("");
+  };
+  const calcOp = (op) => {
+    setExpr((e) => (e ? e.replace(/[+\-×÷]$/, "") + op : op));
+    setCalcResult("");
+  };
+  const evaluate = () => {
+    const r = evaluateExpr(expr);
+    setCalcResult(r == null ? "" : String(r));
+  };
+  const useThisAmount = () => {
+    const r = evaluateExpr(expr);
+    if (r == null || !Number.isFinite(r)) return;
+    onChange(String(Number(r.toFixed(2))));
+    clearCalc();
+    onCalcModeChange(false);
+  };
+
+  const handleCalcKey = (k) => {
+    if (k === "C") clearCalc();
+    else if (k === "⌫") backspaceCalc();
+    else if (k === "÷" || k === "×" || k === "−" || k === "+") calcOp(k);
+    else if (k === "=") evaluate();
+    else calcDigit(k);
+  };
+
+  const calcKeys = ["C", "⌫", "÷", "×", "7", "8", "9", "−", "4", "5", "6", "+", "1", "2", "3", "="];
+  const calcKeyClass = (k) => {
+    if (k === "=") return "h-14 rounded-xl text-xl font-semibold bg-primary-600 text-white transition active:scale-95 select-none";
+    if (k === "C") return "h-14 rounded-xl text-lg font-semibold text-red-500 bg-gray-100 hover:bg-gray-200 transition active:scale-95 select-none";
+    if (k === "⌫") return "h-14 rounded-xl text-lg font-semibold text-gray-500 bg-gray-100 hover:bg-gray-200 transition active:scale-95 select-none";
+    if (k === "÷" || k === "×" || k === "−" || k === "+") return "h-14 rounded-xl text-xl font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 transition active:scale-95 select-none";
+    return "h-14 rounded-xl text-xl font-semibold bg-white border border-gray-200 text-gray-900 hover:bg-gray-50 transition active:scale-95 select-none";
+  };
+
   return (
-    <div className="animate-fade-in">
-      <div className="text-center mb-8 pt-8">
-        <p className="text-4xl font-bold tracking-tight text-gray-900 tabular-nums">
-          {value ? `₹ ${Number(value).toLocaleString("en-IN", { minimumFractionDigits: (value.includes(".") ? 2 : 0), maximumFractionDigits: 2 })}` : "₹ 0"}
-        </p>
-      </div>
-      <div className="grid grid-cols-3 gap-3">
-        {digits.map((d) => (
+    <div className="animate-fade-in flex flex-col flex-1 md:block">
+      <div className="md:hidden flex justify-center pt-5 mb-1">
+        <div className="inline-flex rounded-lg border border-gray-200 bg-white p-0.5 text-sm font-medium dark:border-[#2A2418] dark:bg-[#161310]">
           <button
-            key={d}
-            onClick={() => handleKey(d)}
-            className={`h-14 rounded-xl text-xl font-semibold transition active:scale-95 select-none ${
-              d === "⌫"
-                ? "text-gray-500 bg-gray-100 hover:bg-gray-200"
-                : "bg-white border border-gray-200 text-gray-900 hover:bg-gray-50"
-            }`}
+            type="button"
+            onClick={() => onCalcModeChange(false)}
+            className={`px-4 py-1.5 rounded-md transition select-none ${!calcMode ? "bg-primary-600 text-white" : "text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"}`}
           >
-            {d}
+            Amount
           </button>
-        ))}
+          <button
+            type="button"
+            onClick={() => onCalcModeChange(true)}
+            className={`px-4 py-1.5 rounded-md transition select-none ${calcMode ? "bg-primary-600 text-white" : "text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"}`}
+          >
+            Calculator
+          </button>
+        </div>
       </div>
-      <button
-        onClick={onNext}
-        disabled={!value}
-        className="w-full btn-primary mt-6 !py-3.5"
-      >
-        Next
-      </button>
+
+      {calcMode ? (
+        <div className="flex-1 flex flex-col md:hidden">
+          <div className="text-center pt-6 mb-1">
+            <p className="text-xs text-gray-400 dark:text-[#8A8070] select-none">Calculator</p>
+          </div>
+          <div className="text-center min-h-[24px] mb-1">
+            <p className="text-sm text-gray-400 dark:text-[#8A8070] tabular-nums truncate">{expr || "0"}</p>
+          </div>
+          <div className="text-center mb-5 min-h-[44px]">
+            <p className={`text-4xl font-bold tracking-tight tabular-nums ${calcResult ? "text-gray-900 dark:text-[#E6DFCE]" : "text-gray-300 dark:text-[#3A3226]"}`}>
+              {calcResult || "0"}
+            </p>
+          </div>
+          <div className="grid grid-cols-4 gap-2 mt-auto">
+            {calcKeys.map((k) => (
+              <button key={k} type="button" onClick={() => handleCalcKey(k)} className={calcKeyClass(k)}>
+                {k}
+              </button>
+            ))}
+            <button
+              type="button"
+              onClick={() => handleCalcKey("0")}
+              className="h-14 rounded-xl text-xl font-semibold bg-white border border-gray-200 text-gray-900 hover:bg-gray-50 transition active:scale-95 select-none col-span-3"
+            >
+              0
+            </button>
+            <button
+              type="button"
+              onClick={() => handleCalcKey(".")}
+              className="h-14 rounded-xl text-xl font-semibold bg-white border border-gray-200 text-gray-900 hover:bg-gray-50 transition active:scale-95 select-none"
+            >
+              .
+            </button>
+          </div>
+          {calcResult && (
+            <button type="button" onClick={useThisAmount} className="w-full btn-primary mt-5 !py-3.5">
+              Use this amount
+            </button>
+          )}
+        </div>
+      ) : (
+        <>
+          <div className="text-center mb-8 pt-8">
+            <p className="text-4xl font-bold tracking-tight text-gray-900 tabular-nums">
+              {value ? `₹ ${Number(value).toLocaleString("en-IN", { minimumFractionDigits: (value.includes(".") ? 2 : 0), maximumFractionDigits: 2 })}` : "₹ 0"}
+            </p>
+          </div>
+          <div className="grid grid-cols-3 gap-3 mt-auto md:mt-0">
+            {digits.map((d) => (
+              <button
+                key={d}
+                onClick={() => handleKey(d)}
+                className={`h-16 md:h-14 rounded-xl text-xl font-semibold transition active:scale-95 select-none ${
+                  d === "⌫"
+                    ? "text-gray-500 bg-gray-100 hover:bg-gray-200"
+                    : "bg-white border border-gray-200 text-gray-900 hover:bg-gray-50"
+                }`}
+              >
+                {d}
+              </button>
+            ))}
+          </div>
+          <div className="hidden md:block">
+            <button
+              onClick={onNext}
+              disabled={!value}
+              className="w-full btn-primary mt-6 !py-3.5"
+            >
+              Next
+            </button>
+          </div>
+        </>
+      )}
     </div>
   );
 }
@@ -471,8 +738,8 @@ function NumpadStep({ value, onChange, onNext }) {
 function ChipSelectStep({ title, items, selected, onSelect, renderLabel, renderExtra, renderIcon, onSkip, extra }) {
   return (
     <div className="animate-fade-in pt-4">
-      <h2 className="text-lg font-semibold text-gray-900 mb-4">{title}</h2>
-      <div className="flex flex-wrap gap-3">
+      <h2 className="text-lg font-semibold text-gray-900 text-center md:text-left mb-4">{title}</h2>
+      <div className="grid grid-cols-2 gap-3 md:flex md:flex-wrap md:gap-3">
         {items.map((item) => {
           const label = renderLabel(item);
           const id = item.id || item.value;
@@ -481,7 +748,7 @@ function ChipSelectStep({ title, items, selected, onSelect, renderLabel, renderE
             <button
               key={id}
               onClick={() => onSelect(id)}
-              className={`flex items-center gap-2.5 px-5 py-3 rounded-xl border text-sm font-medium transition active:scale-95 select-none ${
+              className={`flex items-center justify-center gap-2.5 px-5 py-3 rounded-xl border text-sm font-medium transition active:scale-95 select-none ${
                 active
                   ? "border-primary-300 bg-primary-50 text-primary-700 ring-2 ring-primary-100"
                   : "border-gray-200 bg-white text-gray-700 hover:bg-gray-50"
@@ -544,7 +811,7 @@ function AppStep({ method, apps, frequentIds, selected, onSelect, onCreate }) {
 
   return (
     <div className="animate-fade-in pt-4">
-      <h2 className="text-lg font-semibold text-gray-900 mb-4">Which app?</h2>
+      <h2 className="text-lg font-semibold text-gray-900 text-center md:text-left mb-4">Which app?</h2>
       {creating ? (
         <form onSubmit={submit} className="bg-gray-50 rounded-xl p-4 mb-4 animate-slide-up">
           <input
@@ -556,24 +823,24 @@ function AppStep({ method, apps, frequentIds, selected, onSelect, onCreate }) {
             autoFocus
           />
           <div className="flex justify-end gap-2">
-            <button onClick={() => { setCreating(false); setName(""); }} className="btn-secondary !py-2 text-sm">
+            <button onClick={() => { setCreating(false); setName(""); }} className="btn-secondary !py-2.5 text-sm md:!py-2">
               Cancel
             </button>
-            <button type="submit" disabled={!name.trim() || submitting} className="btn-primary !py-2 text-sm">
+            <button type="submit" disabled={!name.trim() || submitting} className="btn-primary !py-2.5 text-sm md:!py-2">
               {submitting && <Loader2 className="w-4 h-4 animate-spin" />}
               Add & continue
             </button>
           </div>
         </form>
       ) : (
-        <div className="flex flex-wrap gap-3">
+        <div className="grid grid-cols-2 gap-3 md:flex md:flex-wrap md:gap-3">
           {sortByFrequent(appsForMethod(method, apps), frequentIds, (a) => a.id).map((a) => {
             const active = String(selected) === String(a.id);
             return (
               <button
                 key={a.id}
                 onClick={() => onSelect(a.id)}
-                className={`px-5 py-3 rounded-xl border text-sm font-medium transition active:scale-95 select-none ${
+                className={`flex items-center justify-center px-5 py-3 rounded-xl border text-sm font-medium transition active:scale-95 select-none ${
                   active
                     ? "border-primary-300 bg-primary-50 text-primary-700 ring-2 ring-primary-100"
                     : "border-gray-200 bg-white text-gray-700 hover:bg-gray-50"
@@ -585,7 +852,7 @@ function AppStep({ method, apps, frequentIds, selected, onSelect, onCreate }) {
           })}
           <button
             onClick={() => setCreating(true)}
-            className="px-5 py-3 rounded-xl border border-dashed border-gray-300 text-sm font-medium text-gray-400 hover:text-gray-600 hover:border-gray-400 transition select-none"
+            className="col-span-2 md:col-span-1 px-5 py-3 rounded-xl border border-dashed border-gray-300 text-sm font-medium text-gray-400 hover:text-gray-600 hover:border-gray-400 transition select-none"
           >
             + New app
           </button>
@@ -650,7 +917,7 @@ function SourceStep({ method, sources, frequentIds, selected, onSelect, onCreate
 
   return (
     <div className="animate-fade-in pt-4">
-      <h2 className="text-lg font-semibold text-gray-900 mb-4">Which source?</h2>
+      <h2 className="text-lg font-semibold text-gray-900 text-center md:text-left mb-4">Which source?</h2>
       {creating ? (
         <form onSubmit={submit} className="bg-gray-50 rounded-xl p-4 mb-4 animate-slide-up">
           <input
@@ -677,17 +944,17 @@ function SourceStep({ method, sources, frequentIds, selected, onSelect, onCreate
             inputMode="numeric"
           />
           <div className="flex justify-end gap-2">
-            <button onClick={() => { setCreating(false); setName(""); setBankName(""); setLastFourDigits(""); }} className="btn-secondary !py-2 text-sm">
+            <button onClick={() => { setCreating(false); setName(""); setBankName(""); setLastFourDigits(""); }} className="btn-secondary !py-2.5 text-sm md:!py-2">
               Cancel
             </button>
-            <button type="submit" disabled={!name.trim() || submitting} className="btn-primary !py-2 text-sm">
+            <button type="submit" disabled={!name.trim() || submitting} className="btn-primary !py-2.5 text-sm md:!py-2">
               {submitting && <Loader2 className="w-4 h-4 animate-spin" />}
               Add & continue
             </button>
           </div>
         </form>
       ) : (
-        <div className="flex flex-wrap gap-3">
+        <div className="grid grid-cols-2 gap-3 md:flex md:flex-wrap md:gap-3">
           {sortByFrequent(sourcesForMethod(method, sources), frequentIds, (s) => s.id).map((s) => {
             const active = String(selected) === String(s.id);
             const label = s.bankName ? `${s.name} · ${s.bankName}` : s.name;
@@ -695,20 +962,20 @@ function SourceStep({ method, sources, frequentIds, selected, onSelect, onCreate
               <button
                 key={s.id}
                 onClick={() => onSelect(s.id)}
-                className={`flex items-center gap-2.5 px-5 py-3 rounded-xl border text-sm font-medium transition active:scale-95 select-none ${
+                className={`flex items-center justify-center gap-2.5 px-3 py-3 rounded-xl border text-sm font-medium transition active:scale-95 select-none ${
                   active
                     ? "border-primary-300 bg-primary-50 text-primary-700 ring-2 ring-primary-100"
                     : "border-gray-200 bg-white text-gray-700 hover:bg-gray-50"
                 }`}
               >
-                <span>{label}</span>
-                {s.lastFourDigits && <span className="text-xs text-gray-400">•••• {s.lastFourDigits}</span>}
+                <span className="truncate">{label}</span>
+                {s.lastFourDigits && <span className="text-xs text-gray-400 shrink-0">•••• {s.lastFourDigits}</span>}
               </button>
             );
           })}
           <button
             onClick={() => setCreating(true)}
-            className="px-5 py-3 rounded-xl border border-dashed border-gray-300 text-sm font-medium text-gray-400 hover:text-gray-600 hover:border-gray-400 transition select-none"
+            className="col-span-2 md:col-span-1 px-5 py-3 rounded-xl border border-dashed border-gray-300 text-sm font-medium text-gray-400 hover:text-gray-600 hover:border-gray-400 transition select-none"
           >
             + New source
           </button>
@@ -750,7 +1017,7 @@ function SubcategoryStep({ categoryId, items, selected, onSelect, onSkip, onCrea
 
   return (
     <div className="animate-fade-in pt-4">
-      <h2 className="text-lg font-semibold text-gray-900 mb-4">Subcategory</h2>
+      <h2 className="text-lg font-semibold text-gray-900 text-center md:text-left mb-4">Subcategory</h2>
 
       {creating ? (
         <form
@@ -767,24 +1034,24 @@ function SubcategoryStep({ categoryId, items, selected, onSelect, onSkip, onCrea
             autoFocus
           />
           <div className="flex justify-end gap-2">
-            <button onClick={() => { setCreating(false); setName(""); }} className="btn-secondary !py-2 text-sm">
+            <button onClick={() => { setCreating(false); setName(""); }} className="btn-secondary !py-2.5 text-sm md:!py-2">
               Cancel
             </button>
-            <button type="submit" disabled={!name.trim() || submitting} className="btn-primary !py-2 text-sm">
+            <button type="submit" disabled={!name.trim() || submitting} className="btn-primary !py-2.5 text-sm md:!py-2">
               {submitting && <Loader2 className="w-4 h-4 animate-spin" />}
               Add
             </button>
           </div>
         </form>
       ) : (
-        <div className="flex flex-wrap gap-3">
+        <div className="grid grid-cols-2 gap-3 md:flex md:flex-wrap md:gap-3">
           {items.map((s) => {
             const active = String(selected) === String(s.id);
             return (
               <button
                 key={s.id}
                 onClick={() => onSelect(s.id)}
-                className={`px-5 py-3 rounded-xl border text-sm font-medium transition active:scale-95 select-none ${
+                className={`flex items-center justify-center px-5 py-3 rounded-xl border text-sm font-medium transition active:scale-95 select-none ${
                   active
                     ? "border-primary-300 bg-primary-50 text-primary-700 ring-2 ring-primary-100"
                     : "border-gray-200 bg-white text-gray-700 hover:bg-gray-50"
@@ -807,7 +1074,7 @@ function SubcategoryStep({ categoryId, items, selected, onSelect, onSkip, onCrea
         {onSkip && (
           <button
             onClick={onSkip}
-            className="px-5 py-3 rounded-xl border border-gray-200 text-sm font-medium text-red-500 hover:text-red-600 hover:bg-red-50 transition select-none"
+            className="hidden md:inline-flex px-5 py-3 rounded-xl border border-gray-200 text-sm font-medium text-red-500 hover:text-red-600 hover:bg-red-50 transition select-none"
           >
             Skip
           </button>
@@ -857,7 +1124,7 @@ function CategoryStep({ categories, selectedId, frequentIds, onSelect, onCreated
 
   return (
     <div className="animate-fade-in pt-4">
-      <h2 className="text-lg font-semibold text-gray-900 mb-4">Category</h2>
+      <h2 className="text-lg font-semibold text-gray-900 text-center md:text-left mb-4">Category</h2>
 
       {showCreate && (
         <div className="bg-gray-50 rounded-xl p-4 mb-4 animate-slide-up">
@@ -892,14 +1159,14 @@ function CategoryStep({ categories, selectedId, frequentIds, onSelect, onCreated
           <div className="flex justify-end gap-2">
             <button
               onClick={() => { setShowCreate(false); setNewName(""); setNewIcon("💸"); }}
-              className="btn-secondary !py-2 text-sm"
+              className="btn-secondary !py-2.5 text-sm md:!py-2"
             >
               Cancel
             </button>
             <button
               onClick={createCategory}
               disabled={!newName.trim() || creating}
-              className="btn-primary !py-2 text-sm"
+              className="btn-primary !py-2.5 text-sm md:!py-2"
             >
               {creating && <Loader2 className="w-4 h-4 animate-spin" />}
               Add
@@ -908,7 +1175,7 @@ function CategoryStep({ categories, selectedId, frequentIds, onSelect, onCreated
         </div>
       )}
 
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
         {sorted.map((cat) => (
           <button
             key={cat.id}
@@ -947,7 +1214,7 @@ function CategoryStep({ categories, selectedId, frequentIds, onSelect, onCreated
 function NoteStep({ form, onChange, onNext, onSkip }) {
   return (
     <div className="animate-fade-in pt-4">
-      <h2 className="text-lg font-semibold text-gray-900 mb-5">Any notes?</h2>
+      <h2 className="text-lg font-semibold text-gray-900 text-center md:text-left mb-5">Any notes?</h2>
       <div className="space-y-4">
         <div>
           <label className="label text-xs text-gray-400 uppercase tracking-wide mb-1.5">Purpose</label>
@@ -970,7 +1237,7 @@ function NoteStep({ form, onChange, onNext, onSkip }) {
           />
         </div>
       </div>
-      <div className="flex items-center gap-3 mt-6">
+      <div className="hidden md:flex items-center gap-3 mt-6">
         <button onClick={onSkip} className="btn-secondary flex-1 !py-3">
           Skip
         </button>
@@ -985,7 +1252,7 @@ function NoteStep({ form, onChange, onNext, onSkip }) {
 function SplitStep({ form, onChange, amount, submitting, onSave, onBack }) {
   return (
     <div className="animate-fade-in pt-4">
-      <h2 className="text-lg font-semibold text-gray-900 mb-5">Split?</h2>
+      <h2 className="text-lg font-semibold text-gray-900 text-center md:text-left mb-5">Split?</h2>
       <label className="flex items-center gap-3 cursor-pointer select-none mb-4">
         <div
           className={`relative w-12 h-7 rounded-full transition-colors ${form.isSplit ? "bg-primary-600" : "bg-gray-200"}`}
@@ -1012,17 +1279,19 @@ function SplitStep({ form, onChange, amount, submitting, onSave, onBack }) {
           />
         </div>
       )}
-      <button
-        onClick={onSave}
-        disabled={submitting || !amount || Number(amount) <= 0}
-        className="w-full btn-primary !py-3.5"
-      >
-        {submitting ? (
-          <Loader2 className="w-4 h-4 animate-spin" />
-        ) : (
-          `Save${amount ? ` -₹${Number(amount).toLocaleString("en-IN")}` : ""}`
-        )}
-      </button>
+      <div className="hidden md:block">
+        <button
+          onClick={onSave}
+          disabled={submitting || !amount || Number(amount) <= 0}
+          className="w-full btn-primary !py-3.5"
+        >
+          {submitting ? (
+            <Loader2 className="w-4 h-4 animate-spin" />
+          ) : (
+            `Save${amount ? ` -₹${Number(amount).toLocaleString("en-IN")}` : ""}`
+          )}
+        </button>
+      </div>
     </div>
   );
 }

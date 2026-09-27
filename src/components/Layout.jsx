@@ -3,6 +3,7 @@ import { Outlet } from "react-router-dom";
 import Sidebar from "./Sidebar.jsx";
 import Navbar from "./Navbar.jsx";
 import MobileNav from "./MobileNav.jsx";
+import InstallBanner from "./InstallBanner.jsx";
 
 export default function Layout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -18,6 +19,7 @@ export default function Layout() {
           </div>
         </main>
         <MobileNav />
+        <InstallBanner />
       </div>
     </div>
   );

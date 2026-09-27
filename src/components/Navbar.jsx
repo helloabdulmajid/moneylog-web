@@ -24,7 +24,7 @@ export default function Navbar({ onMenuClick }) {
   };
 
   return (
-    <header className="sticky top-0 z-20 flex items-center gap-3 px-4 sm:px-8 py-4 bg-gray-50/80 backdrop-blur-md border-b border-gray-100">
+    <header className="sticky top-0 z-20 flex items-center gap-3 px-4 sm:px-8 pb-4 bg-gray-50/80 backdrop-blur-md border-b border-gray-100 pt-[max(1rem,env(safe-area-inset-top))]">
       <button
         className="btn-icon lg:hidden"
         onClick={onMenuClick}

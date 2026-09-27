@@ -11,10 +11,12 @@ import {
   AlertTriangle,
   Download,
   Check,
+  Smartphone,
 } from "lucide-react";
 import { userApi } from "../api/user.js";
 import { useAuth } from "../context/AuthContext.jsx";
 import { useTheme } from "../context/ThemeContext.jsx";
+import { usePwaInstall } from "../hooks/usePwaInstall.js";
 import {
   usePreferences,
   DEFAULT_PREFERENCES,
@@ -109,6 +111,7 @@ export default function ProfilePage() {
   const { user, updateUser, logout } = useAuth();
   const { theme, setTheme } = useTheme();
   const { preferences, savePreferences } = usePreferences();
+  const { canInstall, install, installed } = usePwaInstall();
 
   const [profile, setProfile] = useState(null);
   const [profileForm, setProfileForm] = useState({ name: "", gender: "" });
@@ -394,6 +397,30 @@ export default function ProfilePage() {
               );
             })}
           </div>
+        </Section>
+
+        <Section
+          title="App & Installation"
+          description="Install MoneyLog on this device"
+          icon={Smartphone}
+        >
+          {installed ? (
+            <div className="flex items-center gap-2 text-sm font-medium text-green-700 dark:text-green-400">
+              <Check className="w-4 h-4" /> MoneyLog is installed on this device
+            </div>
+          ) : canInstall ? (
+            <button type="button" className="btn-primary" onClick={install}>
+              <Download className="w-4 h-4" /> Install MoneyLog
+            </button>
+          ) : (
+            <div className="text-sm text-gray-500 dark:text-gray-400 space-y-1.5">
+              <p>To install MoneyLog on this device, use your browser's menu:</p>
+              <ul className="list-disc pl-5 text-xs space-y-0.5">
+                <li>Chrome / Android: ⋮ menu → "Install app" or "Add to Home screen"</li>
+                <li>Safari / iPhone: Share → "Add to Home Screen"</li>
+              </ul>
+            </div>
+          )}
         </Section>
 
         <Section

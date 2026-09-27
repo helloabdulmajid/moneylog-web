@@ -1,5 +1,6 @@
 import { Home, LayoutDashboard, Plus, ReceiptText, Tags } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { useWizardStatus } from "../context/WizardStatusContext.jsx";
 
 const TABS = [
   { path: "/app", label: "Home", icon: Home },
@@ -11,6 +12,7 @@ const TABS = [
 export default function MobileNav() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { wizardActive } = useWizardStatus();
 
   const isActive = (path) => location.pathname === path;
 
@@ -18,8 +20,10 @@ export default function MobileNav() {
     navigate("/app", { state: { openWizard: true } });
   };
 
+  if (wizardActive) return null;
+
   return (
-    <nav className="md:hidden sticky bottom-0 z-30 px-2 pb-2 pt-0 bg-[#F6F1E6]/95 backdrop-blur-md border-t border-gray-100 dark:bg-[#14110C]/95 dark:border-[#2A2418]">
+    <nav className="md:hidden sticky bottom-0 z-30 px-2 pt-0 bg-[#F6F1E6]/95 backdrop-blur-md border-t border-gray-100 dark:bg-[#14110C]/95 dark:border-[#2A2418] pb-[max(0.5rem,env(safe-area-inset-bottom))]">
       <div className="flex items-center justify-between">
         {TABS.slice(0, 2).map((tab) => (
           <TabButton key={tab.path} {...tab} active={isActive(tab.path)} onClick={() => navigate(tab.path)} />
