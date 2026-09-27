@@ -33,7 +33,7 @@ export const REMINDER_TIMING_OPTIONS = [
 ];
 
 export const GENDER_OPTIONS = [
-  { value: "", label: "Prefer not to say" },
+  { value: "", label: "Choose" },
   { value: "MALE", label: "Male" },
   { value: "FEMALE", label: "Female" },
   { value: "OTHER", label: "Other" },
