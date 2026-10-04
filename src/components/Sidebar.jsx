@@ -32,6 +32,9 @@ export default function Sidebar({ open, onClose }) {
           <div>
             <p className="font-display font-bold leading-tight text-[color:var(--sb-hi)]">
               MoneyLog
+              <span className="ml-2 align-middle inline-flex items-center px-1.5 py-0.5 rounded-full border border-[color:var(--sb-lo)]/30 text-[9px] font-semibold font-ledger tracking-[.18em] text-[color:var(--sb-lo)]">
+                BETA
+              </span>
             </p>
             <p className="text-xs text-[color:var(--sb-lo)]">
               Chai first. Ledger later.

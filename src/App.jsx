@@ -16,6 +16,7 @@ import PaymentPage from "./pages/PaymentPage.jsx";
 import CreditCardsPage from "./pages/CreditCardsPage.jsx";
 import BillPaymentsPage from "./pages/BillPaymentsPage.jsx";
 import ProfilePage from "./pages/ProfilePage.jsx";
+import FeedbackPage from "./pages/FeedbackPage.jsx";
 
 export default function App() {
   const { user } = useAuth();
@@ -38,6 +39,7 @@ export default function App() {
       <Route path="/verify-email" element={<VerifyEmailPage />} />
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
       <Route path="/reset-password" element={<ResetPasswordPage />} />
+      <Route path="/feedback" element={<FeedbackPage />} />
 
       <Route
         element={
@@ -54,6 +56,7 @@ export default function App() {
         <Route path="/bill-payments" element={<BillPaymentsPage />} />
         <Route path="/payments" element={<PaymentPage />} />
         <Route path="/app/profile" element={<ProfilePage />} />
+        <Route path="/app/feedback" element={<FeedbackPage embedded />} />
       </Route>
 
       <Route path="*" element={<Navigate to={user ? "/app" : "/"} replace />} />

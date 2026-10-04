@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from "react";
-import { useLocation } from "react-router-dom";
-import { Plus, ChevronLeft, Loader2, Eye, EyeOff } from "lucide-react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { Plus, ChevronLeft, Loader2, Eye, EyeOff, X, MessageSquare, Sparkles } from "lucide-react";
 import toast from "react-hot-toast";
 import { expenseApi } from "../api/expense.js";
 import { categoryApi } from "../api/category.js";
@@ -8,6 +8,7 @@ import { paymentApi } from "../api/payment.js";
 import { formatCurrency, getErrorMessage } from "../utils/helpers.js";
 import { PAYMENT_METHODS } from "../utils/constants.js";
 import { useWizardStatus } from "../context/WizardStatusContext.jsx";
+import { useAuth } from "../context/AuthContext.jsx";
 
 const METHODS_UI = [
   { value: "UPI", label: "UPI", icon: "💳" },
@@ -106,12 +107,32 @@ function fmtDate(d) {
 
 export default function HomePage() {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { user } = useAuth();
   const { setWizardActive } = useWizardStatus();
   const [wizardOpen, setWizardOpen] = useState(false);
   const [date, setDate] = useState(today());
   const [time, setTime] = useState(nowTime());
   const dateRef = useRef(null);
   const timeRef = useRef(null);
+
+  const betaNoticeKey =
+    "moneylog.betaNoticeDismissed." + (user?.email || "guest").toLowerCase();
+
+  const [betaNoticeVisible, setBetaNoticeVisible] = useState(() => {
+    try {
+      return localStorage.getItem(betaNoticeKey) !== "1";
+    } catch {
+      return true;
+    }
+  });
+
+  const dismissBetaNotice = () => {
+    try {
+      localStorage.setItem(betaNoticeKey, "1");
+    } catch {}
+    setBetaNoticeVisible(false);
+  };
 
   const [hints, setHints] = useState(null);
   const [categories, setCategories] = useState([]);
@@ -188,6 +209,60 @@ export default function HomePage() {
 
   return (
     <div className="max-w-md mx-auto">
+      {!wizardOpen && betaNoticeVisible && (
+        <div className="px-1 pt-5 animate-fade-in">
+          <div className="card p-4 relative overflow-hidden">
+            <span className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-brand-deep via-brand-pine to-accent-sienna" />
+            <div className="flex items-start gap-3">
+              <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-primary-50 text-primary-600 dark:bg-primary-950/50 dark:text-primary-400 shrink-0">
+                <Sparkles className="w-5 h-5" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2">
+                  <p className="text-sm font-semibold text-gray-900 dark:text-[#EDE7DA]">
+                    MoneyLog is currently in Beta
+                  </p>
+                  <span className="inline-flex items-center px-1.5 py-0.5 rounded-full border border-accent-sienna/40 text-[9px] font-semibold font-ledger tracking-[.18em] text-accent-sienna">
+                    BETA
+                  </span>
+                </div>
+                <p className="mt-1 text-xs leading-relaxed text-gray-500 dark:text-[#9A907C]">
+                  You may run into unexpected errors or rough edges while the
+                  app is being polished. If something doesn&apos;t work, please
+                  report it{" "}
+                  <button
+                    onClick={() => navigate("/app/feedback")}
+                    className="text-primary-600 dark:text-primary-300 font-medium underline decoration-primary-300/40 underline-offset-2 hover:decoration-primary-500"
+                  >
+                    here
+                  </button>{" "}
+                  — it really helps us improve MoneyLog.
+                </p>
+              </div>
+              <button
+                onClick={dismissBetaNotice}
+                aria-label="Dismiss beta notice"
+                className="p-1 -mr-1 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-[#2A2418] transition"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <div className="mt-3 flex items-center gap-2">
+              <button
+                onClick={() => navigate("/app/feedback")}
+                className="btn-primary !py-2 text-xs"
+              >
+                <MessageSquare className="w-3.5 h-3.5" />
+                Report a bug
+              </button>
+              <button onClick={dismissBetaNotice} className="btn-secondary !py-2 text-xs">
+                Dismiss
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {!wizardOpen && summary && (
         <div className="px-1 pt-5 pb-1 animate-fade-in">
           <p className="text-sm font-medium text-gray-500 dark:text-[#CFC5AF]">

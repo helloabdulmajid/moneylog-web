@@ -41,6 +41,9 @@ export default function LandingPage() {
           <Link to="/" className="flex items-center gap-2.5 shrink-0">
             <Logo size={30} />
             <span className="font-bold tracking-tight text-lg hidden sm:block">MoneyLog</span>
+            <span className="hidden sm:inline-flex items-center px-1.5 py-0.5 rounded-full border border-ink/15 dark:border-[#2A2418] text-[9px] font-semibold font-ledger tracking-[.18em] text-ink-muted dark:text-[#9A907C]">
+              BETA
+            </span>
           </Link>
 
           <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-ink-muted dark:text-[#9A907C]">
@@ -215,6 +218,7 @@ export default function LandingPage() {
             <a href="#privacy" className="hover:text-ink dark:hover:text-[#EDE7DA] transition-colors">Privacy</a>
             <a href="#terms" className="hover:text-ink dark:hover:text-[#EDE7DA] transition-colors">Terms</a>
             <a href="#contact" className="hover:text-ink dark:hover:text-[#EDE7DA] transition-colors">Contact</a>
+            <Link to="/feedback" className="hover:text-ink dark:hover:text-[#EDE7DA] transition-colors">Feedback</Link>
           </div>
         </div>
         <div className="max-w-6xl mx-auto px-4 sm:px-8 pb-8 text-center text-xs text-ink-faint dark:text-[#8A907C]">
