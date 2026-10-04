@@ -3,3 +3,7 @@ dist/
 .env
 .env.*
 *.log
+
+# Local AI project memory and development tracking
+plan.md
+workupdate.md

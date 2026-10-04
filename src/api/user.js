@@ -8,5 +8,5 @@ export const userApi = {
     api.put("/users/me/preferences", data).then((r) => r.data),
   changePassword: (data) =>
     api.put("/users/me/password", data).then((r) => r.data),
-  deleteAccount: () => api.delete("/users/me").then((r) => r.data),
+  deleteAccount: (data) => api.delete("/users/me", { data }).then((r) => r.data),
 };

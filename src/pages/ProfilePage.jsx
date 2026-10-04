@@ -131,6 +131,7 @@ export default function ProfilePage() {
 
   const [deleteStep, setDeleteStep] = useState(0);
   const [confirmText, setConfirmText] = useState("");
+  const [deletePassword, setDeletePassword] = useState("");
   const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
@@ -270,12 +271,13 @@ export default function ProfilePage() {
     if (deleting) return;
     setDeleteStep(0);
     setConfirmText("");
+    setDeletePassword("");
   };
 
   const handleDeleteAccount = async () => {
     setDeleting(true);
     try {
-      await userApi.deleteAccount();
+      await userApi.deleteAccount({ currentPassword: deletePassword });
       toast.success("Your account has been deleted");
       logout();
       navigate("/", { replace: true });
@@ -284,6 +286,7 @@ export default function ProfilePage() {
       setDeleting(false);
       setDeleteStep(0);
       setConfirmText("");
+      setDeletePassword("");
     }
   };
 
@@ -789,11 +792,25 @@ export default function ProfilePage() {
               autoComplete="off"
               spellCheck="false"
               onKeyDown={(e) => {
-                if (e.key === "Enter" && matchesDeletionPhrase(confirmText) && !deleting) {
+                if (e.key === "Enter" && matchesDeletionPhrase(confirmText) && deletePassword && !deleting) {
                   handleDeleteAccount();
                 }
               }}
             />
+            <div>
+              <label className="label">Current password</label>
+              <input
+                type="password"
+                className="input"
+                value={deletePassword}
+                onChange={(e) => setDeletePassword(e.target.value)}
+                placeholder="Enter your password"
+                autoComplete="current-password"
+              />
+              <p className="mt-1 text-xs text-gray-400 dark:text-gray-500">
+                Re-enter your current password to confirm this action.
+              </p>
+            </div>
             <div className="flex justify-end gap-2">
               <button
                 type="button"
@@ -806,7 +823,7 @@ export default function ProfilePage() {
               <button
                 type="button"
                 className="btn-danger"
-                disabled={!matchesDeletionPhrase(confirmText) || deleting}
+                disabled={!matchesDeletionPhrase(confirmText) || !deletePassword || deleting}
                 onClick={handleDeleteAccount}
               >
                 {deleting ? "Deleting..." : "Delete permanently"}

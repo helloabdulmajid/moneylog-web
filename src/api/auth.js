@@ -8,4 +8,6 @@ export const authApi = {
   forgotPassword: (email) => api.post("/auth/forgot-password", { email }).then((r) => r.data),
   resetPassword: (token, newPassword, confirmNewPassword) =>
     api.post("/auth/reset-password", { token, newPassword, confirmNewPassword }).then((r) => r.data),
+  refresh: (refreshToken) => api.post("/auth/refresh", { refreshToken }).then((r) => r.data),
+  logout: (refreshToken) => api.post("/auth/logout", { refreshToken }).then((r) => r.data),
 };
