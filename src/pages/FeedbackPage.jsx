@@ -244,22 +244,53 @@ export default function FeedbackPage({ embedded = false }) {
     }
   };
 
+  const intro = (
+    <div className="mb-8">
+      <p className="mb-1 flex items-center gap-1.5 font-ledger text-[11px] uppercase tracking-[0.16em] text-accent-sienna">
+        <span className="w-1.5 h-1.5 rounded-full bg-accent-sienna inline-block" />
+        Beta · We&apos;re listening
+      </p>
+      <h1 className="font-display text-2xl sm:text-3xl font-bold tracking-tight text-gray-900 dark:text-[#EDE7DA]">
+        Feedback &amp; Support
+      </h1>
+      <p className="mt-2 text-sm leading-relaxed text-gray-500 dark:text-[#9A907C] max-w-lg">
+        Found a bug, have a suggestion, or want a new feature? Tell us about
+        it — it takes a minute and it genuinely helps us improve MoneyLog.
+      </p>
+      <span className="mt-3 block h-0.5 w-10 rounded-full bg-accent-sienna" />
+    </div>
+  );
+
+  const loginGate = (
+    <div>
+      {intro}
+      <div className="card p-8 sm:p-10 text-center">
+        <div className="mx-auto w-14 h-14 rounded-full bg-primary-50 text-primary-600 dark:bg-primary-950/40 dark:text-primary-400 flex items-center justify-center">
+          <MessageSquare className="w-7 h-7" />
+        </div>
+        <h2 className="mt-5 font-display text-xl font-bold text-gray-900 dark:text-[#EDE7DA]">
+          Sign in to send feedback
+        </h2>
+        <p className="mt-3 text-sm text-gray-500 dark:text-[#9A907C] max-w-sm mx-auto leading-relaxed">
+          To keep feedback useful and free of spam, sending a bug report,
+          suggestion or idea requires a MoneyLog account. It only takes a
+          moment.
+        </p>
+        <div className="mt-7 flex flex-col sm:flex-row items-center justify-center gap-2">
+          <Link to="/login" className="btn-primary w-full sm:w-auto">
+            Log in
+          </Link>
+          <Link to="/register" className="btn-secondary w-full sm:w-auto">
+            Create an account
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
+
   const content = (
     <div>
-      <div className="mb-8">
-        <p className="mb-1 flex items-center gap-1.5 font-ledger text-[11px] uppercase tracking-[0.16em] text-accent-sienna">
-          <span className="w-1.5 h-1.5 rounded-full bg-accent-sienna inline-block" />
-          Beta · We&apos;re listening
-        </p>
-        <h1 className="font-display text-2xl sm:text-3xl font-bold tracking-tight text-gray-900 dark:text-[#EDE7DA]">
-          Feedback &amp; Support
-        </h1>
-        <p className="mt-2 text-sm leading-relaxed text-gray-500 dark:text-[#9A907C] max-w-lg">
-          Found a bug, have a suggestion, or want a new feature? Tell us about
-          it — it takes a minute and it genuinely helps us improve MoneyLog.
-        </p>
-        <span className="mt-3 block h-0.5 w-10 rounded-full bg-accent-sienna" />
-      </div>
+      {intro}
 
       {submitted ? (() => {
         const meta = SUCCESS_COPY[submitted.category] || SUCCESS_COPY.GENERAL_FEEDBACK;
@@ -501,7 +532,7 @@ export default function FeedbackPage({ embedded = false }) {
         </div>
       </header>
       <main className="flex-1 w-full max-w-3xl mx-auto px-4 sm:px-8 py-10 sm:py-14">
-        {content}
+        {user ? content : loginGate}
       </main>
       <footer className="border-t border-borderWarm/70 dark:border-[#2A2418]/70 py-6 text-center font-ledger text-[11px] uppercase tracking-[0.18em] text-ink-muted dark:text-[#9A907C]">
         Every rupee has a story. &middot; &copy; 2026 MoneyLog
