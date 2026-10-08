@@ -17,6 +17,16 @@ import CreditCardsPage from "./pages/CreditCardsPage.jsx";
 import BillPaymentsPage from "./pages/BillPaymentsPage.jsx";
 import ProfilePage from "./pages/ProfilePage.jsx";
 import FeedbackPage from "./pages/FeedbackPage.jsx";
+import { AdminAuthProvider } from "./admin/AdminAuthContext.jsx";
+import AdminRoute from "./admin/AdminRoute.jsx";
+import AdminLayout from "./admin/AdminLayout.jsx";
+import AdminLoginPage from "./admin/AdminLoginPage.jsx";
+import AdminDashboardPage from "./admin/AdminDashboardPage.jsx";
+import AdminFeedbackPage from "./admin/AdminFeedbackPage.jsx";
+import AdminUsersPage from "./admin/AdminUsersPage.jsx";
+import AdminFlagsPage from "./admin/AdminFlagsPage.jsx";
+import AdminAuditPage from "./admin/AdminAuditPage.jsx";
+import AdminProfilePage from "./admin/AdminProfilePage.jsx";
 
 export default function App() {
   const { user } = useAuth();
@@ -40,6 +50,32 @@ export default function App() {
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
       <Route path="/reset-password" element={<ResetPasswordPage />} />
       <Route path="/feedback" element={<FeedbackPage />} />
+
+      <Route
+        path="/admin/login"
+        element={
+          <AdminAuthProvider>
+            <AdminLoginPage />
+          </AdminAuthProvider>
+        }
+      />
+      <Route
+        path="/admin"
+        element={
+          <AdminAuthProvider>
+            <AdminRoute>
+              <AdminLayout />
+            </AdminRoute>
+          </AdminAuthProvider>
+        }
+      >
+        <Route index element={<AdminDashboardPage />} />
+        <Route path="feedback" element={<AdminFeedbackPage />} />
+        <Route path="users" element={<AdminUsersPage />} />
+        <Route path="flags" element={<AdminFlagsPage />} />
+        <Route path="audit" element={<AdminAuditPage />} />
+        <Route path="profile" element={<AdminProfilePage />} />
+      </Route>
 
       <Route
         element={

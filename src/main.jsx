@@ -7,6 +7,7 @@ import { AuthProvider } from "./context/AuthContext.jsx";
 import { ThemeProvider } from "./context/ThemeContext.jsx";
 import { PreferencesProvider } from "./context/PreferencesContext.jsx";
 import { WizardStatusProvider } from "./context/WizardStatusContext.jsx";
+import { FeatureFlagProvider } from "./context/FeatureFlagContext.jsx";
 import { registerSW } from "virtual:pwa-register";
 import "./index.css";
 import "@fontsource/space-grotesk/400.css";
@@ -27,8 +28,10 @@ ReactDOM.createRoot(document.getElementById("root")).render(
         <AuthProvider>
           <PreferencesProvider>
             <WizardStatusProvider>
-              <App />
-              <Toaster position="top-right" toastOptions={{ duration: 3000 }} />
+              <FeatureFlagProvider>
+                <App />
+                <Toaster position="top-right" toastOptions={{ duration: 3000 }} />
+              </FeatureFlagProvider>
             </WizardStatusProvider>
           </PreferencesProvider>
         </AuthProvider>
