@@ -17,6 +17,7 @@ import CreditCardsPage from "./pages/CreditCardsPage.jsx";
 import BillPaymentsPage from "./pages/BillPaymentsPage.jsx";
 import ProfilePage from "./pages/ProfilePage.jsx";
 import FeedbackPage from "./pages/FeedbackPage.jsx";
+import PrivacyPage from "./pages/PrivacyPage.jsx";
 import { AdminAuthProvider } from "./admin/AdminAuthContext.jsx";
 import AdminRoute from "./admin/AdminRoute.jsx";
 import AdminLayout from "./admin/AdminLayout.jsx";
@@ -50,6 +51,7 @@ export default function App() {
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
       <Route path="/reset-password" element={<ResetPasswordPage />} />
       <Route path="/feedback" element={<FeedbackPage />} />
+      <Route path="/privacy" element={<PrivacyPage />} />
 
       <Route
         path="/admin/login"
