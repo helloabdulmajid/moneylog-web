@@ -19,6 +19,7 @@ import ProfilePage from "./pages/ProfilePage.jsx";
 import FeedbackPage from "./pages/FeedbackPage.jsx";
 import TermsPage from "./pages/TermsPage.jsx";
 import PrivacyPage from "./pages/PrivacyPage.jsx";
+import ContactPage from "./pages/ContactPage.jsx";
 import { AdminAuthProvider } from "./admin/AdminAuthContext.jsx";
 import AdminRoute from "./admin/AdminRoute.jsx";
 import AdminLayout from "./admin/AdminLayout.jsx";
@@ -53,7 +54,8 @@ export default function App() {
       <Route path="/reset-password" element={<ResetPasswordPage />} />
       <Route path="/feedback" element={<FeedbackPage />} />
       <Route path="/privacy" element={<PrivacyPage />} />
-       <Route path="/terms" element={<TermsPage />} />
+      <Route path="/terms" element={<TermsPage />} />
+      <Route path="/contact" element={<ContactPage />} />
 
       <Route
         path="/admin/login"
