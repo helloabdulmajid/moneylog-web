@@ -215,8 +215,8 @@ export default function LandingPage() {
           </div>
 
           <div className="flex items-center gap-5 text-sm text-ink-muted dark:text-[#9A907C]">
-            <a href="/privacy" className="hover:text-ink dark:hover:text-[#EDE7DA] transition-colors">Privacy</a>
-            <a href="#terms" className="hover:text-ink dark:hover:text-[#EDE7DA] transition-colors">Terms</a>
+           <a href="/privacy" className="hover:text-ink dark:hover:text-[#EDE7DA] transition-colors">Privacy</a>
+           <a href="/terms" className="hover:text-ink dark:hover:text-[#EDE7DA] transition-colors">Terms</a>
             <a href="#contact" className="hover:text-ink dark:hover:text-[#EDE7DA] transition-colors">Contact</a>
             <Link to="/feedback" className="hover:text-ink dark:hover:text-[#EDE7DA] transition-colors">Feedback</Link>
           </div>

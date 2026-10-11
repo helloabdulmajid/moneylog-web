@@ -321,7 +321,7 @@ export default function Privacy() {
           </p>
 
           <p className="mt-4 text-xs text-muted">
-            Last updated: October 10, 2026
+            Last updated: October 02, 2026
           </p>
         </section>
 
